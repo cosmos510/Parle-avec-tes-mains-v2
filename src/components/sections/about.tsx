@@ -8,81 +8,79 @@ export function AboutSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section className="py-24 px-4 border-t border-border" ref={ref}>
-      <div className="max-w-5xl mx-auto">
-        {/* Big stat with animation */}
+    <section className="py-24 px-4 bg-neutral-50 dark:bg-neutral-900/50" ref={ref}>
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Big statement */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.8 }}
-          className="mb-20"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="mb-16"
         >
-          <motion.p 
-            className="text-8xl sm:text-9xl md:text-[12rem] font-bold tracking-tighter leading-none"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            70<span className="text-muted-foreground/20">M</span>
-          </motion.p>
-          <motion.p 
-            className="text-xl sm:text-2xl text-muted-foreground mt-4 max-w-lg"
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            de personnes communiquent en langue des signes. 
-            Apprendre l&apos;alphabet, c&apos;est un premier pas.
-          </motion.p>
+          <p className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight">
+            70 millions
+            <span className="block text-2xl sm:text-3xl font-normal text-neutral-500 mt-2">
+              de personnes communiquent en langue des signes.
+            </span>
+          </p>
         </motion.div>
 
-        {/* How it works - with fun tech reveal */}
+        {/* How it works */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="grid sm:grid-cols-2 gap-16 sm:gap-8"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="grid sm:grid-cols-2 gap-12 mb-16"
         >
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
-              Comment ça marche
-            </h3>
-            <p className="text-lg leading-relaxed mb-4">
-              Ta webcam capte ta main. MediaPipe trouve les 21 points. 
-              Un modèle devine la lettre. Tout ça en local, dans ton navigateur.
+            <h3 className="text-xl font-bold mb-3">Comment ça marche</h3>
+            <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              Ta webcam capte ta main. MediaPipe trouve les 21 points clés. 
+              Un modèle IA devine la lettre. Tout ça en ~30ms, directement 
+              dans ton navigateur.
             </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                Temps réel
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted">
-                ~30ms
-              </span>
-            </div>
           </div>
-          
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
-              Pourquoi c&apos;est gratuit
-            </h3>
-            <p className="text-lg leading-relaxed mb-4">
-              Projet open source. Pas de serveur, pas de compte, pas de tracking. 
-              Le code est sur{" "}
+            <h3 className="text-xl font-bold mb-3">Pourquoi c&apos;est gratuit</h3>
+            <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              Projet perso devenu open source. Pas de serveur à payer, 
+              pas de données à stocker. Le code est sur{" "}
               <a 
-                href="https://github.com" 
-                target="_blank" 
+                href="https://github.com/cosmos510/parle-avec-tes-mains-v2"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="underline underline-offset-4 hover:text-foreground transition-colors"
+                className="underline hover:text-orange-500 transition-colors"
               >
                 GitHub
               </a>.
             </p>
-            <p className="text-sm text-muted-foreground">
-              Fait par quelqu&apos;un qui voulait juste apprendre à signer.
-            </p>
           </div>
         </motion.div>
+
+        {/* Features as simple list */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex flex-wrap gap-3"
+        >
+          {[
+            "Temps réel",
+            "Sans inscription",
+            "100% privé",
+            "Fonctionne hors ligne",
+            "Open source",
+          ].map((feature) => (
+            <span
+              key={feature}
+              className="px-4 py-2 rounded-full border border-neutral-300 dark:border-neutral-700 text-sm"
+            >
+              {feature}
+            </span>
+          ))}
+        </motion.div>
+
       </div>
     </section>
   );

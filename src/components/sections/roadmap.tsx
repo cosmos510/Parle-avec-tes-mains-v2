@@ -9,129 +9,83 @@ export function RoadmapSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section className="py-24 px-4 overflow-hidden" ref={ref}>
-      <div className="max-w-5xl mx-auto">
-        {/* Big typography header */}
-        <motion.div
+    <section className="py-24 px-4" ref={ref}>
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Section title */}
+        <motion.h2
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
-          className="mb-20"
+          className="text-4xl sm:text-5xl font-black mb-16"
         >
-          <h2 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[0.9]">
-            On commence
-            <br />
-            <span className="text-muted-foreground/40">par les bases.</span>
-          </h2>
-        </motion.div>
+          Par où commencer ?
+        </motion.h2>
 
-        {/* Main CTA - The alphabet */}
+        {/* Level 1 - Available */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-6"
         >
           <Link href="/practice" className="group block">
-            <div className="relative p-8 sm:p-12 rounded-3xl bg-foreground text-background overflow-hidden">
-              {/* Background letter that changes on hover */}
-              <div className="absolute -right-10 -bottom-20 text-[20rem] font-bold leading-none text-background/5 select-none pointer-events-none transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
-                A
+            <div className="p-8 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-orange-500 dark:hover:border-orange-500 transition-colors">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <span className="inline-block px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium mb-3">
+                    Disponible maintenant
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-bold">
+                    L&apos;alphabet LSF
+                  </h3>
+                </div>
+                <span className="text-4xl opacity-0 group-hover:opacity-100 transition-opacity">
+                  →
+                </span>
               </div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-sm font-medium text-background/60 uppercase tracking-wider">
-                    Niveau 1
+              <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-lg">
+                26 lettres. Avec ça tu peux épeler n&apos;importe quel mot. 
+                C&apos;est la base pour commencer à communiquer.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {["A", "B", "C", "D", "E", "F", "G", "H"].map((l) => (
+                  <span
+                    key={l}
+                    className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-semibold"
+                  >
+                    {l}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
-                    Prêt à jouer
-                  </span>
-                </div>
-                
-                <h3 className="text-4xl sm:text-5xl font-bold mb-4">
-                  L&apos;alphabet LSF
-                </h3>
-                
-                <p className="text-lg text-background/70 mb-8 max-w-md">
-                  26 lettres. C&apos;est tout ce qu&apos;il faut pour épeler n&apos;importe quel mot 
-                  et commencer à communiquer.
-                </p>
-
-                {/* Progress teaser */}
-                <div className="flex items-center gap-6 mb-8">
-                  <div className="flex -space-x-1">
-                    {["A", "B", "C", "D", "E"].map((letter) => (
-                      <div 
-                        key={letter}
-                        className="w-8 h-8 rounded-full bg-background/10 border-2 border-foreground flex items-center justify-center text-xs font-bold text-background/60"
-                      >
-                        {letter}
-                      </div>
-                    ))}
-                    <div className="w-8 h-8 rounded-full bg-background/10 border-2 border-foreground flex items-center justify-center text-xs font-medium text-background/40">
-                      +21
-                    </div>
-                  </div>
-                  <span className="text-sm text-background/50">
-                    ~15 min pour débloquer les bases
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <span className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-background text-foreground font-medium transition-all group-hover:gap-3 group-hover:px-7">
-                    Commencer le niveau
-                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </span>
-                </div>
+                ))}
+                <span className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-sm text-neutral-500">
+                  +18
+                </span>
               </div>
             </div>
           </Link>
         </motion.div>
 
-        {/* Coming soon levels - more playful */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-6 grid sm:grid-cols-3 gap-4"
-        >
+        {/* Coming soon levels */}
+        <div className="grid sm:grid-cols-3 gap-4">
           {[
-            { level: 2, title: "Chiffres", desc: "0 → 100", locked: true },
-            { level: 3, title: "Mots courants", desc: "50 essentiels", locked: true },
-            { level: 4, title: "Phrases", desc: "Conversations", locked: true },
-          ].map((item) => (
-            <motion.div 
-              key={item.level}
-              whileHover={{ y: -2 }}
-              className="group p-6 rounded-2xl border border-dashed border-border hover:border-muted-foreground/30 transition-colors cursor-not-allowed"
+            { title: "Les chiffres", desc: "0 → 100" },
+            { title: "Mots courants", desc: "50 essentiels" },
+            { title: "Conversations", desc: "Phrases du quotidien" },
+          ].map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
+              className="p-5 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 opacity-50"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground/60">Niveau {item.level}</span>
-                <span className="text-lg opacity-50">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </span>
-              </div>
-              <p className="font-medium text-muted-foreground/60 group-hover:text-muted-foreground/80 transition-colors">
-                {item.title}
-              </p>
-              <p className="text-xs text-muted-foreground/40 mt-1">{item.desc}</p>
+              <p className="font-semibold mb-1">{item.title}</p>
+              <p className="text-sm text-neutral-500">{item.desc}</p>
+              <p className="text-xs text-neutral-400 mt-3">Bientôt disponible</p>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
-        {/* Fun message */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-center text-sm text-muted-foreground/50 mt-8"
-        >
-          Finis l&apos;alphabet pour débloquer la suite
-        </motion.p>
       </div>
     </section>
   );
