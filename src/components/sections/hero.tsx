@@ -17,7 +17,10 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="min-h-screen flex flex-col justify-center px-4 py-20">
+    <section 
+      className="min-h-screen flex flex-col justify-center px-4 py-20"
+      aria-labelledby="hero-heading"
+    >
       <div className="max-w-4xl mx-auto w-full">
         
         {/* Main headline - typographie audacieuse */}
@@ -27,7 +30,10 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="mb-8"
         >
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95]">
+          <h1 
+            id="hero-heading"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95]"
+          >
             Apprends à signer
             <br />
             <span className="inline-flex items-baseline">
@@ -39,6 +45,8 @@ export function HeroSection() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.4 }}
                 className="inline-block ml-3 text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-orange-500"
+                aria-live="polite"
+                aria-atomic="true"
               >
                 {letters[currentIndex]}
               </motion.span>
@@ -63,16 +71,19 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="flex flex-wrap items-center gap-4"
+          role="group"
+          aria-label="Actions principales"
         >
           <Link 
             href="/practice"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold text-lg hover:scale-105 transition-transform"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold text-lg hover:scale-105 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+            aria-label="Commencer à pratiquer la langue des signes"
           >
             C&apos;est parti
-            <span className="text-xl">👋</span>
+            <span className="text-xl" aria-hidden="true">👋</span>
           </Link>
           
-          <span className="text-sm text-neutral-500">
+          <span className="text-sm text-neutral-500" aria-label="Temps estimé">
             ~15 min pour maîtriser les bases
           </span>
         </motion.div>
@@ -83,8 +94,14 @@ export function HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.8 }}
           className="mt-20 flex items-center gap-6"
+          aria-label="Aperçu des lettres disponibles"
+          role="presentation"
         >
-          <div className="flex -space-x-2">
+          <div 
+            className="flex -space-x-2"
+            role="list"
+            aria-label="Premières lettres de l'alphabet"
+          >
             {["A", "B", "C", "D", "E"].map((l, i) => (
               <motion.div
                 key={l}
@@ -92,6 +109,8 @@ export function HeroSection() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1 + i * 0.1 }}
                 className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 border-2 border-white dark:border-neutral-900 flex items-center justify-center font-bold text-lg"
+                role="listitem"
+                aria-label={`Lettre ${l}`}
               >
                 {l}
               </motion.div>

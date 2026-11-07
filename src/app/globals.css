@@ -130,6 +130,54 @@
   }
 }
 
+/* WCAG 2.2 Accessibility */
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-orange-500;
+}
+
+/* Skip link */
+.skip-link {
+  @apply absolute -top-10 left-4 z-[100] px-4 py-2 bg-neutral-900 text-white rounded-md font-medium;
+  @apply focus:top-4 transition-all;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: oklch(0.3 0 0);
+  }
+  .dark {
+    --border: oklch(0.7 0 0);
+  }
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 /* Animations personnalisées */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
