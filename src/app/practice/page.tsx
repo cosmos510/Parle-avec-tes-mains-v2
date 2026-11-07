@@ -8,7 +8,6 @@ import { useLetterStabilization } from "@/hooks/useLetterStabilization";
 import { ASL_ALPHABET, CHALLENGES, SCORING } from "@/lib/constants";
 import type { PracticeMode } from "@/types/practice";
 
-// Descriptions des signes
 const SIGN_HINTS: Record<string, string> = {
   A: "Poing fermé, pouce sur le côté",
   B: "Main plate, doigts serrés, pouce replié",
@@ -105,7 +104,6 @@ export default function PracticePage() {
     }
   }, [mode, targetLetter, pickRandomLetter]);
 
-  // Fermer les hints quand on signe
   useEffect(() => {
     if (isStreaming && displayedLetter) {
       setShowHints(false);
@@ -169,35 +167,35 @@ export default function PracticePage() {
   })();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Celebration - petit toast en bas */}
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
+      {/* Toast de célébration */}
       <AnimatePresence>
         {showCelebration && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-foreground text-background rounded-full font-medium shadow-lg pointer-events-none"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold shadow-lg"
           >
-            ✓ Bravo !
+            ✓ Bien joué !
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Accueil
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md">
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+          <Link href="/" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
+            ← Retour
           </Link>
           
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-muted-foreground">
-              Score: <span className="font-semibold text-foreground">{score}</span>
+            <span className="text-neutral-500">
+              <span className="font-bold text-neutral-900 dark:text-white">{score}</span> pts
             </span>
             {streak > 2 && (
-              <span className="text-muted-foreground">
-                Série: <span className="font-semibold text-foreground">{streak}</span>
+              <span className="px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-medium">
+                🔥 {streak}
               </span>
             )}
           </div>
@@ -206,39 +204,40 @@ export default function PracticePage() {
 
       <main className="pt-20 pb-12 px-4">
         <div className="max-w-5xl mx-auto">
+          
           {/* Mode selector */}
           <div className="flex justify-center gap-2 mb-8">
             <button
               onClick={() => handleModeChange("free")}
-              className={`px-4 py-2 text-sm rounded-full transition-colors ${
+              className={`px-5 py-2 text-sm font-medium rounded-full transition-all ${
                 mode === "free"
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
-              Mode libre
+              Libre
             </button>
             <button
               onClick={() => handleModeChange("challenge")}
-              className={`px-4 py-2 text-sm rounded-full transition-colors ${
+              className={`px-5 py-2 text-sm font-medium rounded-full transition-all ${
                 mode === "challenge"
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
               Challenge
             </button>
           </div>
 
-          {/* Target display */}
+          {/* Lettre cible */}
           {mode === "free" && targetLetter && (
             <div className="text-center mb-8">
-              <p className="text-sm text-muted-foreground mb-2">Signe la lettre</p>
+              <p className="text-sm text-neutral-500 mb-2">Signe la lettre</p>
               <motion.span
                 key={targetLetter}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="inline-block text-8xl sm:text-9xl font-bold"
+                className="inline-block text-7xl sm:text-8xl md:text-9xl font-black text-orange-500"
               >
                 {targetLetter}
               </motion.span>
@@ -247,17 +246,17 @@ export default function PracticePage() {
 
           {mode === "challenge" && (
             <div className="text-center mb-8">
-              <p className="text-sm text-muted-foreground mb-2">Épelle le mot</p>
+              <p className="text-sm text-neutral-500 mb-2">Épelle</p>
               <div className="flex justify-center gap-2">
                 {CHALLENGES[currentChallenge].word.split("").map((letter, i) => (
                   <span
                     key={i}
-                    className={`text-4xl sm:text-5xl font-bold ${
+                    className={`text-4xl sm:text-5xl font-black ${
                       i < challengeProgress.length
-                        ? "text-foreground"
+                        ? "text-green-500"
                         : i === challengeProgress.length
-                        ? "text-foreground"
-                        : "text-muted-foreground/30"
+                        ? "text-orange-500"
+                        : "text-neutral-300 dark:text-neutral-700"
                     }`}
                   >
                     {letter}
@@ -267,11 +266,12 @@ export default function PracticePage() {
             </div>
           )}
 
-          {/* Main content grid */}
+          {/* Grille principale */}
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Camera area */}
+            
+            {/* Zone caméra */}
             <div className="lg:col-span-2">
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-muted border border-border">
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-800">
                 <video 
                   ref={videoRef} 
                   className="hidden"
@@ -281,35 +281,31 @@ export default function PracticePage() {
                 />
                 <canvas
                   ref={canvasRef}
-                  className={`absolute inset-0 w-full h-full ${
-                    isStreaming ? "block" : "hidden"
-                  }`}
+                  className={`absolute inset-0 w-full h-full ${isStreaming ? "block" : "hidden"}`}
                   style={{ objectFit: 'cover' }}
                 />
 
                 {!isStreaming && !isLoading && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-muted-foreground mb-4">
-                      Active ta webcam pour commencer
-                    </p>
+                    <p className="text-neutral-500 mb-4">Active ta webcam pour commencer</p>
                     <button
                       onClick={startCamera}
-                      className="px-6 py-3 bg-foreground text-background rounded-full font-medium hover:opacity-90 transition-opacity"
+                      className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold hover:scale-105 transition-transform"
                     >
-                      Activer la caméra
+                      Activer la caméra 📷
                     </button>
                   </div>
                 )}
 
                 {isLoading && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin mb-4" />
-                    <p className="text-muted-foreground">Chargement...</p>
+                    <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-4" />
+                    <p className="text-neutral-500">Chargement...</p>
                   </div>
                 )}
 
                 {error && (
-                  <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-red-500/90 text-white text-sm rounded-lg">
+                  <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-red-500 text-white text-sm rounded-lg">
                     {error}
                   </div>
                 )}
@@ -324,22 +320,20 @@ export default function PracticePage() {
                 {isStreaming && displayedLetter && (
                   <div className="absolute top-4 right-4">
                     <div
-                      className={`px-4 py-3 rounded-xl backdrop-blur-sm ${
+                      className={`px-4 py-3 rounded-xl ${
                         isValidated && isCorrectLetter
                           ? "bg-green-500 text-white"
-                          : "bg-black/60 text-white"
+                          : "bg-black/70 text-white"
                       }`}
                     >
-                      <span className="text-3xl font-bold block">{displayedLetter}</span>
+                      <span className="text-3xl font-black block">{displayedLetter}</span>
                       <span className="text-xs opacity-70">{confidence}%</span>
                       {!isValidated && (
-                        <div className="mt-2">
-                          <div className="h-1 w-16 bg-white/20 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-white transition-all"
-                              style={{ width: `${stableProgress}%` }}
-                            />
-                          </div>
+                        <div className="mt-2 h-1 w-16 bg-white/20 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-white transition-all"
+                            style={{ width: `${stableProgress}%` }}
+                          />
                         </div>
                       )}
                     </div>
@@ -348,22 +342,22 @@ export default function PracticePage() {
 
                 {isStreaming && !displayedLetter && (
                   <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs">
-                    Montre ta main
+                    👋 Montre ta main
                   </div>
                 )}
               </div>
 
               {isStreaming && (
-                <div className="flex justify-center gap-3 mt-4">
+                <div className="flex justify-center gap-4 mt-4">
                   <button
                     onClick={stopCamera}
-                    className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                   >
                     Arrêter
                   </button>
                   <button
                     onClick={resetGame}
-                    className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                   >
                     Recommencer
                   </button>
@@ -372,10 +366,11 @@ export default function PracticePage() {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Alphabet grid */}
-              <div className="p-5 rounded-2xl border border-border">
-                <p className="font-medium mb-3">Alphabet</p>
+            <div className="space-y-4">
+              
+              {/* Alphabet */}
+              <div className="p-5 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800">
+                <p className="font-bold mb-3">Alphabet</p>
                 <div className="grid grid-cols-6 gap-1.5">
                   {ASL_ALPHABET.map((letter) => {
                     const isTarget = targetLetter === letter;
@@ -386,12 +381,12 @@ export default function PracticePage() {
                         key={letter}
                         onClick={() => mode === "free" && setTargetLetter(letter)}
                         disabled={mode !== "free"}
-                        className={`aspect-square rounded text-sm font-medium transition-all ${
+                        className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
                           isDetected
-                            ? "bg-foreground text-background"
+                            ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
                             : isTarget
-                            ? "bg-blue-500 text-white"
-                            : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                            ? "bg-orange-500 text-white"
+                            : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                         } ${mode === "free" ? "cursor-pointer" : "cursor-default"}`}
                       >
                         {letter}
@@ -399,22 +394,22 @@ export default function PracticePage() {
                     );
                   })}
                 </div>
-                <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground mt-3">
-                  <span className="flex items-center gap-1">
-                    <span className="inline-block w-3 h-3 rounded bg-blue-500" />
+                <div className="flex items-center justify-center gap-4 text-xs text-neutral-500 mt-3">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded bg-orange-500" />
                     cible
                   </span>
-                  <span className="flex items-center gap-1">
-                    <span className="inline-block w-3 h-3 rounded bg-foreground" />
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded bg-neutral-900 dark:bg-white" />
                     détecté
                   </span>
                 </div>
               </div>
 
               {/* Aide-mémoire */}
-              <div className="p-5 rounded-2xl border border-border">
+              <div className="p-5 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="font-medium">Aide-mémoire</p>
+                  <p className="font-bold">Aide-mémoire</p>
                   <button
                     onClick={() => {
                       if (!isStreaming || !displayedLetter) {
@@ -424,8 +419,8 @@ export default function PracticePage() {
                     disabled={isStreaming && !!displayedLetter}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
                       isStreaming && displayedLetter
-                        ? "text-muted-foreground/50 cursor-not-allowed"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "text-neutral-300 cursor-not-allowed"
+                        : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
                     }`}
                   >
                     {showHints ? "Masquer" : "Afficher"}
@@ -433,7 +428,7 @@ export default function PracticePage() {
                 </div>
 
                 {isStreaming && displayedLetter ? (
-                  <p className="text-xs text-muted-foreground italic">
+                  <p className="text-xs text-neutral-400 italic">
                     Masqué pendant que tu signes
                   </p>
                 ) : showHints ? (
@@ -445,8 +440,8 @@ export default function PracticePage() {
                           onClick={() => setSelectedHintLetter(letter)}
                           className={`aspect-square rounded text-xs font-medium transition-colors ${
                             selectedHintLetter === letter
-                              ? "bg-foreground text-background"
-                              : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                              ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                              : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                           }`}
                         >
                           {letter}
@@ -461,10 +456,10 @@ export default function PracticePage() {
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -5 }}
-                          className="p-3 rounded-lg bg-muted/50"
+                          className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800"
                         >
-                          <p className="text-2xl font-bold mb-1">{selectedHintLetter}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-2xl font-black mb-1">{selectedHintLetter}</p>
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
                             {SIGN_HINTS[selectedHintLetter]}
                           </p>
                         </motion.div>
@@ -472,26 +467,27 @@ export default function PracticePage() {
                     </AnimatePresence>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Clique sur Afficher pour voir les signes
+                  <p className="text-xs text-neutral-400">
+                    Clique sur Afficher pour voir comment signer
                   </p>
                 )}
               </div>
 
               {/* Stats */}
-              <div className="p-5 rounded-2xl border border-border">
-                <p className="font-medium mb-3">Session</p>
+              <div className="p-5 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800">
+                <p className="font-bold mb-3">Session</p>
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
-                    <p className="text-3xl font-bold">{score}</p>
-                    <p className="text-xs text-muted-foreground">Points</p>
+                    <p className="text-3xl font-black">{score}</p>
+                    <p className="text-xs text-neutral-500">Points</p>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold">{streak}</p>
-                    <p className="text-xs text-muted-foreground">Série</p>
+                    <p className="text-3xl font-black">{streak}</p>
+                    <p className="text-xs text-neutral-500">Série</p>
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
