@@ -52,8 +52,8 @@ export function HeroSection() {
 
           <div className="flex flex-col sm:items-end gap-4">
             <Link href="/practice">
-              <Button size="lg" className="text-lg px-8 py-6 rounded-full group">
-                <span>Commencer maintenant</span>
+              <Button size="lg" className="text-lg px-8 py-6 rounded-full bg-blue-600 hover:bg-blue-700 text-white group">
+                <span>Commencer</span>
                 <motion.span 
                   className="ml-2 inline-block"
                   animate={{ x: [0, 4, 0] }}
@@ -76,7 +76,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="mt-20 sm:mt-28"
         >
-          <div className="relative rounded-3xl bg-foreground overflow-hidden">
+          <div className="relative rounded-3xl border border-border bg-muted/30 overflow-hidden">
             <div className="grid sm:grid-cols-2">
               {/* Left: Big animated letter */}
               <div className="flex items-center justify-center py-16 sm:py-24">
@@ -87,30 +87,30 @@ export function HeroSection() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.4 }}
-                    className="text-[12rem] sm:text-[16rem] font-bold text-background leading-none select-none"
+                    className="text-[12rem] sm:text-[16rem] font-bold text-foreground leading-none select-none"
                   >
                     {letters[currentIndex].letter}
                   </motion.span>
                   
                   {/* Subtle ring decoration */}
-                  <div className="absolute -inset-8 border border-background/10 rounded-full" />
-                  <div className="absolute -inset-16 border border-background/5 rounded-full" />
+                  <div className="absolute -inset-8 border border-foreground/10 rounded-full" />
+                  <div className="absolute -inset-16 border border-foreground/5 rounded-full" />
                 </div>
               </div>
 
               {/* Right: Info panel */}
-              <div className="flex flex-col justify-center p-8 sm:p-12 bg-background/5">
+              <div className="flex flex-col justify-center p-8 sm:p-12 bg-muted/50">
                 <div className="space-y-6">
                   {/* Current letter info */}
                   <div>
-                    <p className="text-background/50 text-sm uppercase tracking-wider mb-2">
+                    <p className="text-muted-foreground text-sm uppercase tracking-wider mb-2">
                       Lettre en cours
                     </p>
                     <motion.p
                       key={currentIndex}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-background text-lg"
+                      className="text-foreground text-lg"
                     >
                       {letters[currentIndex].description}
                     </motion.p>
@@ -124,23 +124,23 @@ export function HeroSection() {
                         onClick={() => setCurrentIndex(i)}
                         className={`h-2 rounded-full transition-all ${
                           i === currentIndex 
-                            ? "bg-background w-8" 
-                            : "bg-background/30 w-2 hover:bg-background/50"
+                            ? "bg-blue-600 w-8" 
+                            : "bg-foreground/20 w-2 hover:bg-foreground/40"
                         }`}
                       />
                     ))}
                   </div>
 
                   {/* Stats */}
-                  <div className="pt-6 border-t border-background/10">
+                  <div className="pt-6 border-t border-border">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-3xl font-bold text-background">26</p>
-                        <p className="text-background/50 text-sm">lettres</p>
+                        <p className="text-3xl font-bold text-foreground">26</p>
+                        <p className="text-muted-foreground text-sm">lettres</p>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-background">~15</p>
-                        <p className="text-background/50 text-sm">minutes</p>
+                        <p className="text-3xl font-bold text-foreground">~15</p>
+                        <p className="text-muted-foreground text-sm">minutes</p>
                       </div>
                     </div>
                   </div>
