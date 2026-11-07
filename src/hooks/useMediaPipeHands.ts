@@ -20,6 +20,8 @@ interface UseMediaPipeHandsReturn {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   isStreaming: boolean;
   isLoading: boolean;
+  loadingStep: string;
+  loadingProgress: number;
   error: string | null;
   predictedLetter: string | null;
   confidence: number;
@@ -27,8 +29,13 @@ interface UseMediaPipeHandsReturn {
   stopCamera: () => void;
 }
 
+// Throttle framerate pour économiser des ressources (30 FPS max)
+const TARGET_FPS = 30;
+const FRAME_INTERVAL = 1000 / TARGET_FPS;
+
 /**
  * Hook gérant MediaPipe Hands + modèle ONNX pour la détection ASL.
+ * Optimisé pour les performances.
  */
 export function useMediaPipeHands(): UseMediaPipeHandsReturn {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -37,24 +44,34 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
   const handsRef = useRef<MediaPipeHands | null>(null);
   const animationRef = useRef<number | null>(null);
   const isRunningRef = useRef(false);
+  const lastFrameTimeRef = useRef(0);
+  const isPredictingRef = useRef(false);
   
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("");
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [predictedLetter, setPredictedLetter] = useState<string | null>(null);
   const [confidence, setConfidence] = useState(0);
 
-  // Traiter les résultats MediaPipe
+  // Traiter les résultats MediaPipe (optimisé)
   const processResults = useCallback(async (results: MediaPipeResults) => {
+    // Éviter les traitements concurrents
+    if (isPredictingRef.current) return;
+    
     const canvas = canvasRef.current;
     const video = videoRef.current;
     
     if (!canvas || !video) return;
     
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { 
+      alpha: false, // Désactiver la transparence pour de meilleures perfs
+      desynchronized: true // Mode asynchrone pour éviter le blocking
+    });
     if (!ctx) return;
 
-    // S'assurer que le canvas a la bonne taille
+    // Redimensionner le canvas une seule fois si nécessaire
     if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -82,15 +99,20 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
       // Dessiner les landmarks
       drawLandmarks(ctx, mirroredLandmarks, canvas.width, canvas.height);
       
-      // Prédire avec le modèle ONNX
-      const result = await predict(mirroredLandmarks);
-      
-      if (result) {
-        setPredictedLetter(result.letter);
-        setConfidence(Math.round(result.confidence * 100));
-      } else {
-        setPredictedLetter(null);
-        setConfidence(0);
+      // Prédire avec le modèle ONNX (non-bloquant)
+      isPredictingRef.current = true;
+      try {
+        const result = await predict(mirroredLandmarks);
+        
+        if (result) {
+          setPredictedLetter(result.letter);
+          setConfidence(Math.round(result.confidence * 100));
+        } else {
+          setPredictedLetter(null);
+          setConfidence(0);
+        }
+      } finally {
+        isPredictingRef.current = false;
       }
     } else {
       setPredictedLetter(null);
@@ -117,8 +139,8 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
 
       hands.setOptions({
         maxNumHands: 1,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.7,
+        modelComplexity: 0, // 0 = Lite (plus rapide), 1 = Full
+        minDetectionConfidence: 0.6, // Un peu plus permissif
         minTrackingConfidence: 0.5,
       });
 
@@ -135,6 +157,8 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
     try {
       setIsLoading(true);
       setError(null);
+      setLoadingProgress(0);
+      setLoadingStep("Initialisation...");
       
       // Vérifier que les refs sont disponibles
       if (!videoRef.current) {
@@ -142,21 +166,32 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
         throw new Error('Élément vidéo non disponible');
       }
       
+      // Étape 1: Charger le modèle IA
+      setLoadingStep("Chargement du modèle IA...");
+      setLoadingProgress(15);
+      
       // Initialiser MediaPipe et définir le callback
       const hands = await initMediaPipe();
       hands.onResults(processResults);
       
-      // Obtenir le flux vidéo
+      setLoadingProgress(50);
+      setLoadingStep("Accès à la webcam...");
+      
+      // Étape 2: Obtenir le flux vidéo
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
+          width: { ideal: 640, max: 640 },
+          height: { ideal: 480, max: 480 },
+          frameRate: { ideal: 30, max: 30 },
           facingMode: 'user',
         },
       });
 
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
+      
+      setLoadingProgress(75);
+      setLoadingStep("Préparation de la vidéo...");
       
       // Attendre que la vidéo soit prête
       await new Promise<void>((resolve, reject) => {
@@ -179,15 +214,28 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
         video.onerror = () => reject(new Error('Video error'));
       });
       
+      setLoadingProgress(100);
+      setLoadingStep("C'est prêt !");
+      
       // Marquer comme actif AVANT de démarrer la boucle
       isRunningRef.current = true;
       setIsStreaming(true);
       setIsLoading(false);
+      setLoadingStep("");
+      setLoadingProgress(0);
       
-      // Boucle de détection
-      const runDetection = async () => {
+      // Boucle de détection avec throttling
+      const runDetection = async (timestamp: number) => {
         // Vérifier si on doit continuer
         if (!isRunningRef.current) return;
+        
+        // Throttle: limiter à TARGET_FPS
+        const elapsed = timestamp - lastFrameTimeRef.current;
+        if (elapsed < FRAME_INTERVAL) {
+          animationRef.current = requestAnimationFrame(runDetection);
+          return;
+        }
+        lastFrameTimeRef.current = timestamp;
         
         const video = videoRef.current;
         const handsInstance = handsRef.current;
@@ -274,6 +322,8 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
     canvasRef,
     isStreaming,
     isLoading,
+    loadingStep,
+    loadingProgress,
     error,
     predictedLetter,
     confidence,
