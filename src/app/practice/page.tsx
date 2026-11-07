@@ -387,7 +387,7 @@ export default function PracticePage() {
                     
                     {/* Message rassurant */}
                     <p className="text-neutral-500 text-xs sm:text-sm text-center max-w-xs">
-                      ⏳ Le premier chargement peut prendre quelques secondes, c&apos;est normal !
+                      Le premier chargement peut prendre quelques secondes, c&apos;est normal !
                     </p>
                   </div>
                 )}
