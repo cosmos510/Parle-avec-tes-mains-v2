@@ -41,7 +41,7 @@ export function Navbar() {
           
           <Link 
             href="/practice"
-            className="text-sm font-medium hover:text-primary transition-colors"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
           >
             Pratiquer →
           </Link>

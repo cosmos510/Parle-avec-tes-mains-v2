@@ -51,12 +51,12 @@ export function AboutSection() {
               Ta webcam capte ta main. MediaPipe trouve les 21 points. 
               Un modèle devine la lettre. Tout ça en local, dans ton navigateur.
             </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                 Temps réel
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
                 ~30ms
               </span>
             </div>
@@ -73,7 +73,7 @@ export function AboutSection() {
                 href="https://github.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="underline underline-offset-4 hover:text-foreground transition-colors"
+                className="text-blue-600 hover:text-blue-700 underline underline-offset-4 transition-colors"
               >
                 GitHub
               </a>.

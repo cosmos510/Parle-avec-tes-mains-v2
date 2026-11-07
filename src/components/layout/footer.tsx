@@ -22,7 +22,7 @@ export function Footer() {
               href="https://github.com/cosmos510/FingerspellToSign"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
+              className="hover:text-blue-600 transition-colors"
             >
               GitHub
             </a>
@@ -30,13 +30,13 @@ export function Footer() {
               href="https://www.linkedin.com/in/maxime-martin-090731aa/"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
+              className="hover:text-blue-600 transition-colors"
             >
               LinkedIn
             </a>
             <a
               href="mailto:maximemartin510@gmail.com"
-              className="hover:text-foreground transition-colors"
+              className="hover:text-blue-600 transition-colors"
             >
               Contact
             </a>
