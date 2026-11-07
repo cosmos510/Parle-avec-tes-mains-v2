@@ -8,7 +8,7 @@ Apprends l'alphabet de la langue des signes française (LSF) grâce à la reconn
 
 ## Démo
 
-🔗 [parle-avec-tes-mains.vercel.app](https://parle-avec-tes-mains.fr)
+🔗 [parle-avec-tes-mains](https://parle-avec-tes-mains.fr)
 
 ## Fonctionnalités
 
