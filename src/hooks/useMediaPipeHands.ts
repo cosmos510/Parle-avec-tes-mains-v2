@@ -20,6 +20,8 @@ interface UseMediaPipeHandsReturn {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   isStreaming: boolean;
   isLoading: boolean;
+  loadingStep: string;
+  loadingProgress: number;
   error: string | null;
   predictedLetter: string | null;
   confidence: number;
@@ -47,6 +49,8 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
   
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("");
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [predictedLetter, setPredictedLetter] = useState<string | null>(null);
   const [confidence, setConfidence] = useState(0);
@@ -153,6 +157,8 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
     try {
       setIsLoading(true);
       setError(null);
+      setLoadingProgress(0);
+      setLoadingStep("Initialisation...");
       
       // Vérifier que les refs sont disponibles
       if (!videoRef.current) {
@@ -160,11 +166,18 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
         throw new Error('Élément vidéo non disponible');
       }
       
+      // Étape 1: Charger le modèle IA
+      setLoadingStep("Chargement du modèle IA...");
+      setLoadingProgress(15);
+      
       // Initialiser MediaPipe et définir le callback
       const hands = await initMediaPipe();
       hands.onResults(processResults);
       
-      // Obtenir le flux vidéo avec résolution optimisée
+      setLoadingProgress(50);
+      setLoadingStep("Accès à la webcam...");
+      
+      // Étape 2: Obtenir le flux vidéo
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 640, max: 640 },
@@ -176,6 +189,9 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
 
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
+      
+      setLoadingProgress(75);
+      setLoadingStep("Préparation de la vidéo...");
       
       // Attendre que la vidéo soit prête
       await new Promise<void>((resolve, reject) => {
@@ -198,10 +214,15 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
         video.onerror = () => reject(new Error('Video error'));
       });
       
+      setLoadingProgress(100);
+      setLoadingStep("C'est prêt !");
+      
       // Marquer comme actif AVANT de démarrer la boucle
       isRunningRef.current = true;
       setIsStreaming(true);
       setIsLoading(false);
+      setLoadingStep("");
+      setLoadingProgress(0);
       
       // Boucle de détection avec throttling
       const runDetection = async (timestamp: number) => {
@@ -301,6 +322,8 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
     canvasRef,
     isStreaming,
     isLoading,
+    loadingStep,
+    loadingProgress,
     error,
     predictedLetter,
     confidence,

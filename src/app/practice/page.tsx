@@ -55,6 +55,8 @@ export default function PracticePage() {
     canvasRef,
     isStreaming,
     isLoading,
+    loadingStep,
+    loadingProgress,
     error,
     predictedLetter,
     confidence,
@@ -355,9 +357,38 @@ export default function PracticePage() {
                 )}
 
                 {isLoading && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center" role="status" aria-label="Chargement en cours">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-3" aria-hidden="true" />
-                    <p className="text-neutral-500 text-sm">Chargement...</p>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6" role="status" aria-label="Chargement en cours">
+                    {/* Spinner animé */}
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 mb-5">
+                      <div className="absolute inset-0 border-4 border-neutral-200 dark:border-neutral-700 rounded-full" />
+                      <div 
+                        className="absolute inset-0 border-4 border-transparent border-t-orange-500 rounded-full animate-spin"
+                        style={{ animationDuration: '1s' }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-lg sm:text-xl font-bold text-neutral-600 dark:text-neutral-300">
+                          {loadingProgress}%
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Message de chargement */}
+                    <p className="text-neutral-900 dark:text-white font-medium text-sm sm:text-base mb-2">
+                      {loadingStep}
+                    </p>
+                    
+                    {/* Barre de progression */}
+                    <div className="w-48 sm:w-64 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden mb-4">
+                      <div 
+                        className="h-full bg-orange-500 transition-all duration-300 ease-out"
+                        style={{ width: `${loadingProgress}%` }}
+                      />
+                    </div>
+                    
+                    {/* Message rassurant */}
+                    <p className="text-neutral-500 text-xs sm:text-sm text-center max-w-xs">
+                      ⏳ Le premier chargement peut prendre quelques secondes, c&apos;est normal !
+                    </p>
                   </div>
                 )}
 
