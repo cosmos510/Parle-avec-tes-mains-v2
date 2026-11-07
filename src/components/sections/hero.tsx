@@ -76,7 +76,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="mt-20 sm:mt-28"
         >
-          <div className="relative rounded-3xl border border-border bg-muted/30 overflow-hidden">
+          <div className="relative rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200/50 dark:border-blue-800/30 overflow-hidden">
             <div className="grid sm:grid-cols-2">
               {/* Left: Big animated letter */}
               <div className="flex items-center justify-center py-16 sm:py-24">
@@ -87,19 +87,19 @@ export function HeroSection() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.4 }}
-                    className="text-[12rem] sm:text-[16rem] font-bold text-foreground leading-none select-none"
+                    className="text-[12rem] sm:text-[16rem] font-bold text-blue-600 dark:text-blue-400 leading-none select-none"
                   >
                     {letters[currentIndex].letter}
                   </motion.span>
                   
                   {/* Subtle ring decoration */}
-                  <div className="absolute -inset-8 border border-foreground/10 rounded-full" />
-                  <div className="absolute -inset-16 border border-foreground/5 rounded-full" />
+                  <div className="absolute -inset-8 border border-blue-300/30 dark:border-blue-700/30 rounded-full" />
+                  <div className="absolute -inset-16 border border-blue-300/20 dark:border-blue-700/20 rounded-full" />
                 </div>
               </div>
 
               {/* Right: Info panel */}
-              <div className="flex flex-col justify-center p-8 sm:p-12 bg-muted/50">
+              <div className="flex flex-col justify-center p-8 sm:p-12 bg-white/50 dark:bg-blue-950/30">
                 <div className="space-y-6">
                   {/* Current letter info */}
                   <div>
@@ -125,14 +125,14 @@ export function HeroSection() {
                         className={`h-2 rounded-full transition-all ${
                           i === currentIndex 
                             ? "bg-blue-600 w-8" 
-                            : "bg-foreground/20 w-2 hover:bg-foreground/40"
+                            : "bg-blue-300 dark:bg-blue-700 w-2 hover:bg-blue-400 dark:hover:bg-blue-600"
                         }`}
                       />
                     ))}
                   </div>
 
                   {/* Stats */}
-                  <div className="pt-6 border-t border-border">
+                  <div className="pt-6 border-t border-blue-200/50 dark:border-blue-800/30">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-3xl font-bold text-foreground">26</p>
