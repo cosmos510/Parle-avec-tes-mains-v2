@@ -18,32 +18,30 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? "bg-background/80 backdrop-blur-md border-b border-border" 
+          ? "bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md" 
           : ""
       }`}
     >
-      <nav className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo - just text */}
-        <Link href="/" className="font-semibold text-lg tracking-tight">
+      <nav className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="font-bold text-lg">
           Parle avec tes mains
         </Link>
 
-        {/* Right section - minimal */}
         <div className="flex items-center gap-6">
           <a
-            href="https://github.com/cosmos510/FingerspellToSign"
+            href="https://github.com/cosmos510/parle-avec-tes-mains-v2"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
+            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors hidden sm:block"
           >
             GitHub
           </a>
           
           <Link 
             href="/practice"
-            className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            className="text-sm font-medium px-4 py-2 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:opacity-80 transition-opacity"
           >
-            Pratiquer →
+            Pratiquer
           </Link>
         </div>
       </nav>
