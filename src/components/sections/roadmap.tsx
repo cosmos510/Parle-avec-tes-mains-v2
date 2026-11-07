@@ -32,27 +32,27 @@ export function RoadmapSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <Link href="/practice" className="group block">
-            <div className="relative p-8 sm:p-12 rounded-3xl bg-foreground text-background overflow-hidden">
+            <div className="relative p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200/50 dark:border-blue-800/30 overflow-hidden">
               {/* Background letter that changes on hover */}
-              <div className="absolute -right-10 -bottom-20 text-[20rem] font-bold leading-none text-background/5 select-none pointer-events-none transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+              <div className="absolute -right-10 -bottom-20 text-[20rem] font-bold leading-none text-blue-500/10 select-none pointer-events-none transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
                 A
               </div>
               
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="text-sm font-medium text-background/60 uppercase tracking-wider">
+                  <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     Niveau 1
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+                  <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-600 dark:text-green-400 text-xs font-medium">
                     Prêt à jouer
                   </span>
                 </div>
                 
-                <h3 className="text-4xl sm:text-5xl font-bold mb-4">
+                <h3 className="text-4xl sm:text-5xl font-bold mb-4 text-foreground">
                   L&apos;alphabet LSF
                 </h3>
                 
-                <p className="text-lg text-background/70 mb-8 max-w-md">
+                <p className="text-lg text-muted-foreground mb-8 max-w-md">
                   26 lettres. C&apos;est tout ce qu&apos;il faut pour épeler n&apos;importe quel mot 
                   et commencer à communiquer.
                 </p>
@@ -63,22 +63,22 @@ export function RoadmapSection() {
                     {["A", "B", "C", "D", "E"].map((letter) => (
                       <div 
                         key={letter}
-                        className="w-8 h-8 rounded-full bg-background/10 border-2 border-foreground flex items-center justify-center text-xs font-bold text-background/60"
+                        className="w-8 h-8 rounded-full bg-white dark:bg-foreground/10 border-2 border-blue-300 dark:border-blue-700 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400"
                       >
                         {letter}
                       </div>
                     ))}
-                    <div className="w-8 h-8 rounded-full bg-background/10 border-2 border-foreground flex items-center justify-center text-xs font-medium text-background/40">
+                    <div className="w-8 h-8 rounded-full bg-white dark:bg-foreground/10 border-2 border-blue-300 dark:border-blue-700 flex items-center justify-center text-xs font-medium text-muted-foreground">
                       +21
                     </div>
                   </div>
-                  <span className="text-sm text-background/50">
+                  <span className="text-sm text-muted-foreground">
                     ~15 min pour débloquer les bases
                   </span>
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <span className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-background text-foreground font-medium transition-all group-hover:gap-3 group-hover:px-7">
+                  <span className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-blue-600 text-white font-medium transition-all group-hover:gap-3 group-hover:px-7 group-hover:bg-blue-700">
                     Commencer le niveau
                     <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
