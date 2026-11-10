@@ -36,6 +36,15 @@ export const metadata: Metadata = {
   authors: [{ name: "Maxime Martin" }],
   creator: "Maxime Martin",
   metadataBase: new URL("https://parle-avec-tes-mains.fr"),
+  applicationName: "Parle avec tes mains",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "LSF",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     title: "Parle avec tes mains - Apprends la langue des signes française",
     description:
@@ -76,6 +85,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="scroll-smooth">
+      <head>
+        <meta name="theme-color" content="#f97316" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
