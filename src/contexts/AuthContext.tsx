@@ -10,7 +10,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile as firebaseUpdateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db, googleProvider } from '@/lib/firebase';
 
 interface UserProfile {
@@ -132,12 +132,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
+  // Check if displayName is already taken
+  const isDisplayNameTaken = async (displayName: string, currentUid: string): Promise<boolean> => {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('displayName', '==', displayName));
+    const querySnapshot = await getDocs(q);
+    
+    // Check if any user (other than current user) has this displayName
+    for (const doc of querySnapshot.docs) {
+      if (doc.id !== currentUid) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   // Update user profile
   const updateUserProfile = async (data: { displayName?: string }) => {
     if (!user) throw new Error('No user logged in');
     
-    // Update Firebase Auth profile
+    // Check displayName uniqueness
     if (data.displayName) {
+      const isTaken = await isDisplayNameTaken(data.displayName, user.uid);
+      if (isTaken) {
+        throw new Error('Ce nom est déjà utilisé par un autre utilisateur');
+      }
       await firebaseUpdateProfile(user, { displayName: data.displayName });
     }
     

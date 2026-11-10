@@ -8,6 +8,7 @@ import { useLetterStabilization } from "@/hooks/useLetterStabilization";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useGameTimer } from "@/hooks/useGameTimer";
 import { GameHeader, formatTime } from "@/components/game";
+import { GameBackground, CameraPlaceholder, StatsBadge } from "@/components/ui";
 import { saveSprintRecord, loadSprintData } from "./_lib/sprintService";
 import type { GameState } from "@/types/game";
 
@@ -112,11 +113,11 @@ export default function SprintPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950">
+    <GameBackground variant="sprint">
       {/* Header */}
       <GameHeader title="Sprint A → Z" />
 
-      <main className="pt-14 pb-8 px-4">
+      <main className="pt-32 pb-8 px-4">
         <div className="max-w-6xl mx-auto">
           
           {/* Layout 3 colonnes */}
@@ -152,14 +153,17 @@ export default function SprintPage() {
                 )}
 
                 {gameState === "playing" && (
-                  <motion.span
+                  <motion.div
                     key={currentLetter}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none text-orange-500"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="relative"
                   >
-                    {currentLetter}
-                  </motion.span>
+                    <span className="text-[140px] sm:text-[180px] lg:text-[220px] font-black leading-none text-orange-500 block -ml-2 lg:-ml-4">
+                      {currentLetter}
+                    </span>
+                    <div className="absolute -bottom-2 left-0 w-16 h-1 bg-orange-500/30 rounded-full" aria-hidden="true" />
+                  </motion.div>
                 )}
 
                 {gameState === "finished" && (
@@ -221,7 +225,13 @@ export default function SprintPage() {
 
             {/* Colonne centrale - Webcam */}
             <div className="lg:col-span-6 order-2">
-              <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden border-2 border-neutral-200 dark:border-neutral-800">
+              <div className="relative aspect-[4/3] bg-neutral-50 dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                {/* Coins décoratifs */}
+                <div className="absolute top-3 left-3 w-4 h-4 border-l-2 border-t-2 border-neutral-300 dark:border-neutral-700 rounded-tl" aria-hidden="true" />
+                <div className="absolute top-3 right-3 w-4 h-4 border-r-2 border-t-2 border-neutral-300 dark:border-neutral-700 rounded-tr" aria-hidden="true" />
+                <div className="absolute bottom-3 left-3 w-4 h-4 border-l-2 border-b-2 border-neutral-300 dark:border-neutral-700 rounded-bl" aria-hidden="true" />
+                <div className="absolute bottom-3 right-3 w-4 h-4 border-r-2 border-b-2 border-neutral-300 dark:border-neutral-700 rounded-br" aria-hidden="true" />
+                
                 <video ref={videoRef} className="hidden" playsInline muted autoPlay />
                 <canvas
                   ref={canvasRef}
@@ -231,20 +241,11 @@ export default function SprintPage() {
 
                 {/* État initial */}
                 {!isStreaming && !isLoading && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-                    <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4">
-                      <span className="text-4xl"></span>
-                    </div>
-                    <p className="text-neutral-500 mb-4 text-center">
-                      Signe les 26 lettres le plus vite possible
-                    </p>
-                    <button
-                      onClick={startCamera}
-                      className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold hover:scale-105 transition-transform"
-                    >
-                      Activer la caméra
-                    </button>
-                  </div>
+                  <CameraPlaceholder 
+                    onStartCamera={startCamera}
+                    title="Prêt pour le sprint ?"
+                    subtitle="26 lettres le plus vite possible"
+                  />
                 )}
 
                 {/* Chargement */}
@@ -447,6 +448,6 @@ export default function SprintPage() {
           </div>
         </div>
       </main>
-    </div>
+    </GameBackground>
   );
 }

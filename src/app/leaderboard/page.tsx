@@ -113,7 +113,7 @@ export default function LeaderboardPage() {
       {/* Header */}
       <GameHeader title="Classement" />
 
-      <main className="pt-20 pb-20 px-4" role="main" aria-labelledby="leaderboard-heading">
+      <main className="pt-24 pb-20 px-4" role="main" aria-labelledby="leaderboard-heading">
         <div className="max-w-2xl mx-auto">
           {/* Intro */}
           <h1 id="leaderboard-heading" className="sr-only">Classement</h1>

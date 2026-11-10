@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { GameHeader } from "@/components/game";
+import { GameBackground } from "@/components/ui";
 import { DuelLobby } from "./_components/DuelLobby";
 import { DuelGame } from "./_components/DuelGame";
 import { DuelResult } from "./_components/DuelResult";
@@ -178,36 +179,36 @@ function DuelContent() {
   // Écran de résultat
   if (room?.status === "finished") {
     return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950">
+      <GameBackground variant="duel">
         <GameHeader title="Duel terminé" />
-        <main className="pt-20 pb-8 px-4">
+        <main className="pt-32 pb-8 px-4">
           <DuelResult room={room} odId={user!.uid} onPlayAgain={handleLeaveRoom} />
         </main>
-      </div>
+      </GameBackground>
     );
   }
 
   // En jeu (countdown ou playing)
   if (room && (room.status === "countdown" || room.status === "playing")) {
     return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950">
+      <GameBackground variant="duel">
         <GameHeader title="Duel en cours" />
-        <main className="pt-14 pb-8 px-4">
+        <main className="pt-32 pb-8 px-4">
           <DuelGame room={room} user={user!} />
         </main>
-      </div>
+      </GameBackground>
     );
   }
 
   // Lobby (waiting)
   if (room?.status === "waiting") {
     return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950">
+      <GameBackground variant="duel">
         <GameHeader title="Duel" />
-        <main className="pt-20 pb-8 px-4">
+        <main className="pt-32 pb-8 px-4">
           <DuelLobby room={room} user={user!} onLeave={handleLeaveRoom} />
         </main>
-      </div>
+      </GameBackground>
     );
   }
 
@@ -215,10 +216,10 @@ function DuelContent() {
   const onlineFriends = friends.filter(f => f.status === 'online');
   
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950">
+    <GameBackground variant="duel">
       <GameHeader title="Duel" />
 
-      <main className="pt-20 pb-8 px-4">
+      <main className="pt-32 pb-8 px-4">
         <div className="max-w-md mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -401,6 +402,6 @@ function DuelContent() {
           </motion.div>
         </div>
       </main>
-    </div>
+    </GameBackground>
   );
 }

@@ -62,7 +62,11 @@ export default function ProfilePage() {
       await updateProfile({ displayName: newDisplayName.trim() });
       setIsEditingName(false);
     } catch (error) {
-      setNameError("Erreur lors de la mise à jour");
+      if (error instanceof Error) {
+        setNameError(error.message);
+      } else {
+        setNameError("Erreur lors de la mise à jour");
+      }
     } finally {
       setIsSavingName(false);
     }

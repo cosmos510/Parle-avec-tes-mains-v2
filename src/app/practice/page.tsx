@@ -7,7 +7,9 @@ import { useLetterStabilization } from "@/hooks/useLetterStabilization";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { recordLetterValidation, recordChallengeComplete } from "@/lib/progression";
 import { ASL_ALPHABET, CHALLENGES, SCORING } from "@/lib/constants";
+import Link from "next/link";
 import { GameHeader } from "@/components/game";
+import { GameBackground, CameraPlaceholder } from "@/components/ui";
 import type { PracticeMode } from "@/types/practice";
 
 export default function PracticePage() {
@@ -149,7 +151,7 @@ export default function PracticePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950">
+    <GameBackground variant="practice">
       {/* Toasts */}
       <AnimatePresence>
         {showCelebration && (
@@ -182,19 +184,9 @@ export default function PracticePage() {
       </AnimatePresence>
 
       {/* Header */}
-      <GameHeader 
-        title="Pratique libre"
-        rightContent={
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-neutral-500">{score} pts</span>
-            <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-xs font-medium">
-              {streak} série
-            </span>
-          </div>
-        }
-      />
+      <GameHeader title="Pratique libre" />
 
-      <main className="pt-14 pb-8 px-4">
+      <main className="pt-24 pb-8 px-4">
         <div className="max-w-6xl mx-auto">
           
           {/* Mode selector */}
@@ -251,15 +243,19 @@ export default function PracticePage() {
                 {mode === "free" && targetLetter && (
                   <motion.div
                     key={targetLetter}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="relative"
                     role="status"
                     aria-live="polite"
                     aria-label={`Lettre cible : ${targetLetter}`}
                   >
-                    <span className="text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none text-orange-500">
+                    {/* Lettre principale qui déborde */}
+                    <span className="text-[140px] sm:text-[180px] lg:text-[220px] font-black leading-none text-orange-500 block -ml-2 lg:-ml-4">
                       {targetLetter}
                     </span>
+                    {/* Ligne décorative */}
+                    <div className="absolute -bottom-2 left-0 w-16 h-1 bg-orange-500/30 rounded-full" aria-hidden="true" />
                   </motion.div>
                 )}
 
@@ -316,10 +312,16 @@ export default function PracticePage() {
             {/* Colonne centrale - Webcam */}
             <div className="lg:col-span-6 order-2">
               <div 
-                className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden border-2 border-neutral-200 dark:border-neutral-800"
+                className="relative aspect-[4/3] bg-neutral-50 dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm"
                 role="region"
                 aria-label="Zone de la caméra pour la détection des signes"
               >
+                {/* Coins décoratifs */}
+                <div className="absolute top-3 left-3 w-4 h-4 border-l-2 border-t-2 border-neutral-300 dark:border-neutral-700 rounded-tl" aria-hidden="true" />
+                <div className="absolute top-3 right-3 w-4 h-4 border-r-2 border-t-2 border-neutral-300 dark:border-neutral-700 rounded-tr" aria-hidden="true" />
+                <div className="absolute bottom-3 left-3 w-4 h-4 border-l-2 border-b-2 border-neutral-300 dark:border-neutral-700 rounded-bl" aria-hidden="true" />
+                <div className="absolute bottom-3 right-3 w-4 h-4 border-r-2 border-b-2 border-neutral-300 dark:border-neutral-700 rounded-br" aria-hidden="true" />
+                
                 <video ref={videoRef} className="hidden" playsInline muted autoPlay aria-hidden="true" />
                 <canvas
                   ref={canvasRef}
@@ -331,23 +333,11 @@ export default function PracticePage() {
 
                 {/* État initial */}
                 {!isStreaming && !isLoading && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-                    <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4" aria-hidden="true">
-                      <svg className="w-10 h-10 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <p className="text-neutral-500 mb-4 text-center">
-                      Active ta webcam pour commencer
-                    </p>
-                    <button
-                      onClick={startCamera}
-                      className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold hover:scale-105 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
-                      aria-label="Activer la caméra pour commencer la pratique"
-                    >
-                      Activer la caméra
-                    </button>
-                  </div>
+                  <CameraPlaceholder 
+                    onStartCamera={startCamera}
+                    title="Active ta webcam pour commencer"
+                    subtitle={mode === "free" ? "Signe des lettres au hasard" : "Épelle des mots lettre par lettre"}
+                  />
                 )}
 
                 {/* Chargement */}
@@ -408,9 +398,9 @@ export default function PracticePage() {
                   <button
                     onClick={stopCamera}
                     className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
-                    aria-label="Arrêter la caméra"
+                    aria-label="Mettre en pause la caméra"
                   >
-                    Arrêter la caméra
+                    Pause
                   </button>
                   <button
                     onClick={resetGame}
@@ -419,6 +409,14 @@ export default function PracticePage() {
                   >
                     Recommencer
                   </button>
+                  <Link
+                    href="/play"
+                    onClick={stopCamera}
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    aria-label="Terminer et retourner au menu"
+                  >
+                    Terminer
+                  </Link>
                 </div>
               )}
             </div>
@@ -555,6 +553,6 @@ export default function PracticePage() {
           </div>
         </div>
       </main>
-    </div>
+    </GameBackground>
   );
 }

@@ -140,7 +140,7 @@ function ChallengeContent() {
       {/* Header */}
       <GameHeader title={title} />
 
-      <main className="pt-14 pb-8 px-4">
+      <main className="pt-32 pb-8 px-4">
         <div className="max-w-6xl mx-auto">
           
           {/* Bannière défi */}

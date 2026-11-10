@@ -58,8 +58,8 @@ export function RoadmapSection() {
                 </span>
               </div>
               <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-lg">
-                26 lettres. Avec ça tu peux épeler n&apos;importe quel mot. 
-                C&apos;est la base pour commencer à communiquer.
+                Tout commence par là. Une fois que tu connais les 26 lettres, 
+                tu peux épeler n&apos;importe quel mot et te faire comprendre.
               </p>
               <div 
                 className="flex flex-wrap gap-2"
@@ -118,13 +118,13 @@ export function RoadmapSection() {
                 </span>
               </div>
               <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-lg">
-                Signe les 26 lettres le plus vite possible. Chrono, classement, 
-                et partage ton score avec tes amis !
+                Tu connais l&apos;alphabet ? Prouve-le. Enchaîne les 26 lettres 
+                le plus vite possible et compare ton temps avec les autres.
               </p>
               <div className="flex items-center gap-4 text-sm text-neutral-500">
                 <span>Classement</span>
-                <span>⏱️ Chrono</span>
-                <span>📤 Partage</span>
+                <span>Chrono</span>
+                <span>Partage</span>
               </div>
             </article>
           </Link>
