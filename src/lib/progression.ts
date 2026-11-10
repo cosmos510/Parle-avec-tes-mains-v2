@@ -1,5 +1,6 @@
 import { doc, updateDoc, increment, getDoc, setDoc, arrayUnion } from 'firebase/firestore';
 import { db } from './firebase';
+import { checkAndAwardBadges, Badge } from './badges';
 
 // XP rewards
 export const XP_REWARDS = {
@@ -71,7 +72,7 @@ function isStreakBroken(lastDate: string | null): boolean {
 export async function recordLetterValidation(
   userId: string,
   letter: string
-): Promise<{ xpGained: number; newLevel: boolean; letterMastered: boolean }> {
+): Promise<{ xpGained: number; newLevel: boolean; letterMastered: boolean; newBadges: Badge[] }> {
   const userRef = doc(db, 'users', userId);
   const statsRef = doc(db, 'users', userId, 'letterStats', letter);
   
@@ -115,13 +116,15 @@ export async function recordLetterValidation(
   // Check streak
   const lastPracticeDate = userData?.lastPracticeDate;
   let streakUpdate: Record<string, unknown> = {};
+  let newStreak = userData?.currentStreak || 0;
   
   if (isStreakBroken(lastPracticeDate)) {
     // Reset streak
     streakUpdate = { currentStreak: 1 };
+    newStreak = 1;
   } else if (isNewDay(lastPracticeDate)) {
     // Increment streak
-    const newStreak = (userData?.currentStreak || 0) + 1;
+    newStreak = (userData?.currentStreak || 0) + 1;
     xpGained += XP_REWARDS.STREAK_BONUS * newStreak;
     streakUpdate = {
       currentStreak: increment(1),
@@ -141,10 +144,23 @@ export async function recordLetterValidation(
     ...streakUpdate,
   });
   
+  // Check and award badges
+  const lettersMastered = userData?.lettersMastered || [];
+  if (letterMastered && !lettersMastered.includes(letter)) {
+    lettersMastered.push(letter);
+  }
+  
+  const newBadges = await checkAndAwardBadges(userId, {
+    totalXp: newTotalXP,
+    currentStreak: newStreak,
+    lettersMastered,
+  });
+  
   return {
     xpGained,
     newLevel: leveledUp,
     letterMastered,
+    newBadges,
   };
 }
 

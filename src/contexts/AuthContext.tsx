@@ -25,6 +25,7 @@ interface UserProfile {
   longestStreak: number;
   lastPracticeDate: string | null;
   lettersMastered: string[];
+  badges: string[];
 }
 
 interface AuthContextType {
@@ -67,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       longestStreak: 0,
       lastPracticeDate: null,
       lettersMastered: [],
+      badges: [],
     };
 
     await setDoc(profileRef, {
