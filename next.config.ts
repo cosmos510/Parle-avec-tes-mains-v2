@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   
   // Fix pour firebase-admin ESM/CommonJS sur Vercel
-  serverExternalPackages: ['firebase-admin'],
+  serverExternalPackages: ['firebase-admin', 'jose', 'jwks-rsa'],
   
   turbopack: {
     rules: {
