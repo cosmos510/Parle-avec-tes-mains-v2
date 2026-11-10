@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password);
-      router.push("/practice");
+      router.push("/play");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Une erreur est survenue";
       if (errorMessage.includes("invalid-credential")) {
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
     try {
       await signInWithGoogle();
-      router.push("/practice");
+      router.push("/play");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Une erreur est survenue";
       if (errorMessage.includes("popup-closed")) {

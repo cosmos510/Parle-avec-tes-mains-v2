@@ -47,7 +47,7 @@ export default function SignUpPage() {
 
     try {
       await signUp(email, password, displayName);
-      router.push("/practice");
+      router.push("/play");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Une erreur est survenue";
       if (errorMessage.includes("email-already-in-use")) {
@@ -77,7 +77,7 @@ export default function SignUpPage() {
 
     try {
       await signInWithGoogle();
-      router.push("/practice");
+      router.push("/play");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Une erreur est survenue";
       if (errorMessage.includes("popup-closed")) {
