@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDuelInvites } from "@/hooks/useDuelInvites";
+import { Users } from "lucide-react";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, loading } = useAuth();
+  const { hasInvites } = useDuelInvites();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,7 +40,7 @@ export function Navbar() {
           Parle avec tes mains
         </Link>
 
-        <div className="flex items-center gap-6" role="group" aria-label="Liens de navigation">
+        <div className="flex items-center gap-4 sm:gap-6" role="group" aria-label="Liens de navigation">
           <a
             href="https://github.com/cosmos510/parle-avec-tes-mains-v2"
             target="_blank"
@@ -46,12 +51,49 @@ export function Navbar() {
             GitHub
           </a>
           
-          <Link 
-            href="/practice"
+          {!loading && user && (
+            <Link 
+              href="/friends"
+              className="relative text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded p-2"
+              aria-label={hasInvites ? "Amis - Nouvelles invitations" : "Amis"}
+            >
+              <Users className="w-5 h-5" aria-hidden="true" />
+              {hasInvites && (
+                <span 
+                  className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"
+                  aria-label="Nouvelles invitations"
+                  role="status"
+                />
+              )}
+            </Link>
+          )}
+          
+          {!loading && (
+            user ? (
+              <Link 
+                href="/profile"
+                className="text-sm font-medium px-4 py-2 rounded-full border-2 border-neutral-200 dark:border-neutral-800 hover:border-orange-500 dark:hover:border-orange-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                aria-label="Mon profil"
+              >
+                {user.displayName?.split(' ')[0] || 'Profil'}
+              </Link>
+            ) : (
+              <Link 
+                href="/login"
+                className="text-sm font-medium px-4 py-2 rounded-full border-2 border-neutral-200 dark:border-neutral-800 hover:border-orange-500 dark:hover:border-orange-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                aria-label="Se connecter"
+              >
+                Connexion
+              </Link>
+            )
+          )}
+          
+          {/* Play button - direct link to hub */}
+          <Link
+            href="/play"
             className="text-sm font-medium px-4 py-2 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
-            aria-label="Aller à la page de pratique"
           >
-            Pratiquer
+            Jouer
           </Link>
         </div>
       </nav>

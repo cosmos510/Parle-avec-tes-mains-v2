@@ -1,0 +1,199 @@
+"use client";
+
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { 
+  User,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  updateProfile as firebaseUpdateProfile
+} from 'firebase/auth';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
+import { auth, db, googleProvider } from '@/lib/firebase';
+
+interface UserProfile {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  createdAt: Date;
+  totalXp: number;
+  currentLevel: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastPracticeDate: string | null;
+  lettersMastered: string[];
+  badges: string[];
+}
+
+interface AuthContextType {
+  user: User | null;
+  profile: UserProfile | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
+  updateProfile: (data: { displayName?: string }) => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Create or get user profile from Firestore
+  const getOrCreateProfile = async (user: User): Promise<UserProfile> => {
+    const profileRef = doc(db, 'users', user.uid);
+    const profileSnap = await getDoc(profileRef);
+
+    if (profileSnap.exists()) {
+      return profileSnap.data() as UserProfile;
+    }
+
+    // Create new profile
+    const newProfile: UserProfile = {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      createdAt: new Date(),
+      totalXp: 0,
+      currentLevel: 1,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastPracticeDate: null,
+      lettersMastered: [],
+      badges: [],
+    };
+
+    await setDoc(profileRef, {
+      ...newProfile,
+      createdAt: serverTimestamp(),
+    });
+
+    return newProfile;
+  };
+
+  // Refresh profile from Firestore
+  const refreshProfile = async () => {
+    if (user) {
+      const updatedProfile = await getOrCreateProfile(user);
+      setProfile(updatedProfile);
+    }
+  };
+
+  // Listen to auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setUser(user);
+      
+      if (user) {
+        try {
+          const userProfile = await getOrCreateProfile(user);
+          setProfile(userProfile);
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      } else {
+        setProfile(null);
+      }
+      
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Sign in with email/password
+  const signIn = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
+  };
+
+  // Sign up with email/password
+  const signUp = async (email: string, password: string, displayName: string) => {
+    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    await firebaseUpdateProfile(user, { displayName });
+  };
+
+  // Sign in with Google
+  const signInWithGoogle = async () => {
+    await signInWithPopup(auth, googleProvider);
+  };
+
+  // Sign out
+  const signOut = async () => {
+    await firebaseSignOut(auth);
+    setProfile(null);
+  };
+
+  // Check if displayName is already taken
+  const isDisplayNameTaken = async (displayName: string, currentUid: string): Promise<boolean> => {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('displayName', '==', displayName));
+    const querySnapshot = await getDocs(q);
+    
+    // Check if any user (other than current user) has this displayName
+    for (const doc of querySnapshot.docs) {
+      if (doc.id !== currentUid) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Update user profile
+  const updateUserProfile = async (data: { displayName?: string }) => {
+    if (!user) throw new Error('No user logged in');
+    
+    // Check displayName uniqueness
+    if (data.displayName) {
+      const isTaken = await isDisplayNameTaken(data.displayName, user.uid);
+      if (isTaken) {
+        throw new Error('Ce nom est déjà utilisé par un autre utilisateur');
+      }
+      await firebaseUpdateProfile(user, { displayName: data.displayName });
+    }
+    
+    // Update Firestore profile
+    const profileRef = doc(db, 'users', user.uid);
+    await updateDoc(profileRef, {
+      ...data,
+      updatedAt: serverTimestamp(),
+    });
+    
+    // Refresh local profile state
+    await refreshProfile();
+  };
+
+  const value = {
+    user,
+    profile,
+    loading,
+    signIn,
+    signUp,
+    signInWithGoogle,
+    signOut,
+    refreshProfile,
+    updateProfile: updateUserProfile,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

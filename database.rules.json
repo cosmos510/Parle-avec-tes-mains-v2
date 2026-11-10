@@ -1,0 +1,103 @@
+{
+  "rules": {
+    // ========== PRÉSENCE UTILISATEURS ==========
+    "presence": {
+      "$userId": {
+        // Lecture: tout utilisateur authentifié (pour voir le statut des amis)
+        ".read": "auth != null",
+        // Écriture: uniquement le propriétaire
+        ".write": "auth != null && auth.uid == $userId",
+        // Validation des données
+        ".validate": "newData.hasChildren(['status', 'lastSeen']) && 
+                     (newData.child('status').val() == 'online' || 
+                      newData.child('status').val() == 'offline' || 
+                      newData.child('status').val() == 'in-game') &&
+                     newData.child('lastSeen').isNumber()"
+      }
+    },
+    
+    // ========== INVITATIONS DE DUEL ==========
+    "duelInvites": {
+      "$targetUserId": {
+        // L'utilisateur peut lire ses propres invitations
+        ".read": "auth != null && auth.uid == $targetUserId",
+        
+        "$inviteId": {
+          // Création: tout utilisateur authentifié peut envoyer une invitation
+          // L'inviteId doit commencer par l'ID de l'expéditeur
+          ".write": "auth != null && (
+            // Création d'une nouvelle invitation
+            (!data.exists() && newData.exists() && 
+             newData.child('fromUserId').val() == auth.uid &&
+             $inviteId.beginsWith(auth.uid + '_')) ||
+            // Suppression par le destinataire (pour accepter/refuser)
+            (data.exists() && !newData.exists() && auth.uid == $targetUserId) ||
+            // Suppression par l'expéditeur (pour annuler)
+            (data.exists() && !newData.exists() && data.child('fromUserId').val() == auth.uid)
+          )",
+          
+          // Validation des données d'invitation
+          ".validate": "newData.hasChildren(['id', 'fromUserId', 'fromDisplayName', 'roomId', 'timestamp', 'status']) &&
+                       newData.child('status').val() == 'pending' &&
+                       newData.child('timestamp').isNumber() &&
+                       newData.child('fromUserId').isString() &&
+                       newData.child('roomId').isString()"
+        }
+      }
+    },
+    
+    // ========== SALONS DE CHALLENGE (temps réel) ==========
+    "challengeRooms": {
+      "$roomId": {
+        // Lecture: participants uniquement
+        ".read": "auth != null && (
+          data.child('creatorId').val() == auth.uid ||
+          data.child('players/' + auth.uid).exists()
+        )",
+        
+        // Création du salon
+        ".write": "auth != null && (
+          // Création
+          (!data.exists() && newData.child('creatorId').val() == auth.uid) ||
+          // Mise à jour par un participant
+          (data.exists() && (
+            data.child('creatorId').val() == auth.uid ||
+            data.child('players/' + auth.uid).exists()
+          )) ||
+          // Suppression par le créateur
+          (data.exists() && !newData.exists() && data.child('creatorId').val() == auth.uid)
+        )",
+        
+        // Sous-nœuds pour les joueurs
+        "players": {
+          "$odId": {
+            ".validate": "newData.hasChildren(['odId', 'displayName', 'score'])"
+          }
+        },
+        
+        // État du jeu
+        "gameState": {
+          ".validate": "newData.hasChildren(['status', 'currentSign'])"
+        }
+      }
+    },
+    
+    // ========== SCORES EN TEMPS RÉEL (pour le sprint) ==========
+    "liveScores": {
+      "$sessionId": {
+        ".read": "auth != null",
+        "$odId": {
+          ".write": "auth != null && auth.uid == $odId",
+          ".validate": "newData.hasChildren(['score', 'timestamp']) &&
+                       newData.child('score').isNumber() &&
+                       newData.child('timestamp').isNumber()"
+        }
+      }
+    },
+    
+    // ========== RÈGLE PAR DÉFAUT ==========
+    // Refuser tout ce qui n'est pas explicitement autorisé
+    ".read": false,
+    ".write": false
+  }
+}

@@ -1,0 +1,30 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+
+/**
+ * Hook pour protéger une page et rediriger vers login si non connecté.
+ * Utilise router.replace pour éviter le retour arrière vers la page protégée.
+ * 
+ * @returns {Object} - user, loading, isAuthenticated
+ */
+export function useRequireAuth() {
+  const { user, loading, profile, refreshProfile } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading, router]);
+
+  return { 
+    user, 
+    profile,
+    loading, 
+    isAuthenticated: !!user,
+    refreshProfile,
+  };
+}

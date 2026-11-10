@@ -58,8 +58,8 @@ export function RoadmapSection() {
                 </span>
               </div>
               <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-lg">
-                26 lettres. Avec ça tu peux épeler n&apos;importe quel mot. 
-                C&apos;est la base pour commencer à communiquer.
+                Tout commence par là. Une fois que tu connais les 26 lettres, 
+                tu peux épeler n&apos;importe quel mot et te faire comprendre.
               </p>
               <div 
                 className="flex flex-wrap gap-2"
@@ -83,6 +83,48 @@ export function RoadmapSection() {
                 >
                   +18
                 </span>
+              </div>
+            </article>
+          </Link>
+        </motion.div>
+
+        {/* Sprint Mode - NEW */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mb-6"
+        >
+          <Link 
+            href="/sprint" 
+            className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded-2xl"
+            aria-label="Mode Sprint - Signe l'alphabet le plus vite possible"
+          >
+            <article className="p-8 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-orange-500 dark:hover:border-orange-500 transition-colors">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <span 
+                    className="inline-block px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-medium mb-3"
+                    role="status"
+                  >
+                    Nouveau
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-bold">
+                    Sprint Alphabet
+                  </h3>
+                </div>
+                <span className="text-4xl opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true">
+                  →
+                </span>
+              </div>
+              <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-lg">
+                Tu connais l&apos;alphabet ? Prouve-le. Enchaîne les 26 lettres 
+                le plus vite possible et compare ton temps avec les autres.
+              </p>
+              <div className="flex items-center gap-4 text-sm text-neutral-500">
+                <span>Classement</span>
+                <span>Chrono</span>
+                <span>Partage</span>
               </div>
             </article>
           </Link>

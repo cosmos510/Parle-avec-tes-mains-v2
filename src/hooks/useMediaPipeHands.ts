@@ -178,14 +178,23 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
       setLoadingStep("Accès à la webcam...");
       
       // Étape 2: Obtenir le flux vidéo
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640, max: 640 },
-          height: { ideal: 480, max: 480 },
-          frameRate: { ideal: 30, max: 30 },
-          facingMode: 'user',
-        },
-      });
+      let stream: MediaStream;
+      try {
+        // Essayer d'abord avec les contraintes idéales
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            frameRate: { ideal: 30 },
+            facingMode: 'user',
+          },
+        });
+      } catch {
+        // Fallback : contraintes minimales si les premières échouent
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+      }
 
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
@@ -259,11 +268,14 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
     } catch (err) {
       console.error('startCamera error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Erreur caméra';
+      const errorName = err instanceof Error ? err.name : '';
       
       if (errorMessage.includes('NotAllowed') || errorMessage.includes('Permission')) {
         setError('Accès à la caméra refusé. Veuillez autoriser l\'accès.');
       } else if (errorMessage.includes('NotFound')) {
         setError('Aucune caméra détectée.');
+      } else if (errorName === 'OverconstrainedError' || errorMessage.includes('Overconstrained')) {
+        setError('Caméra déjà utilisée par un autre onglet ou application.');
       } else {
         setError(`Erreur: ${errorMessage}`);
       }

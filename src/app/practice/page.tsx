@@ -2,42 +2,19 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
 import { useMediaPipeHands } from "@/hooks/useMediaPipeHands";
 import { useLetterStabilization } from "@/hooks/useLetterStabilization";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { recordLetterValidation, recordChallengeComplete } from "@/lib/progression";
 import { ASL_ALPHABET, CHALLENGES, SCORING } from "@/lib/constants";
+import Link from "next/link";
+import { GameHeader } from "@/components/game";
+import { GameBackground, CameraPlaceholder } from "@/components/ui";
 import type { PracticeMode } from "@/types/practice";
 
-const SIGN_HINTS: Record<string, string> = {
-  A: "Poing fermé, pouce sur le côté",
-  B: "Main plate, doigts serrés, pouce replié",
-  C: "Main en forme de C",
-  D: "Index levé, autres doigts en cercle avec pouce",
-  E: "Doigts repliés sur la paume, pouce dessous",
-  F: "Pouce et index en cercle, autres doigts levés",
-  G: "Index et pouce parallèles, horizontaux",
-  H: "Index et majeur horizontaux, parallèles",
-  I: "Petit doigt levé, poing fermé",
-  J: "Petit doigt levé, mouvement en J",
-  K: "Index et majeur en V, pouce entre",
-  L: "Pouce et index en L",
-  M: "3 doigts sur le pouce, poing",
-  N: "2 doigts sur le pouce, poing",
-  O: "Doigts en cercle, forme de O",
-  P: "Comme K mais vers le bas",
-  Q: "Comme G mais vers le bas",
-  R: "Index et majeur croisés",
-  S: "Poing fermé, pouce devant",
-  T: "Pouce entre index et majeur",
-  U: "Index et majeur levés, collés",
-  V: "Index et majeur en V",
-  W: "Index, majeur, annulaire levés",
-  X: "Index plié en crochet",
-  Y: "Pouce et petit doigt tendus",
-  Z: "Index dessine un Z",
-};
-
 export default function PracticePage() {
+  const { user, loading: authLoading, refreshProfile } = useRequireAuth();
+
   const [mode, setMode] = useState<PracticeMode>("free");
   const [currentChallenge, setCurrentChallenge] = useState(0);
   const [challengeProgress, setChallengeProgress] = useState<string[]>([]);
@@ -46,60 +23,36 @@ export default function PracticePage() {
   const [streak, setStreak] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [lastValidatedLetter, setLastValidatedLetter] = useState<string | null>(null);
-  const [showHints, setShowHints] = useState(false);
-  const [selectedHintLetter, setSelectedHintLetter] = useState<string | null>(null);
-  const [announcement, setAnnouncement] = useState("");
+  const [xpNotification, setXpNotification] = useState<{ xp: number; message: string } | null>(null);
 
   const {
-    videoRef,
-    canvasRef,
-    isStreaming,
-    isLoading,
-    loadingStep,
-    loadingProgress,
-    error,
-    predictedLetter,
-    confidence,
-    startCamera,
-    stopCamera,
+    videoRef, canvasRef, isStreaming, isLoading, loadingStep,
+    loadingProgress, error, predictedLetter, confidence, startCamera, stopCamera,
   } = useMediaPipeHands();
 
-  const {
-    displayedLetter,
-    progress: stableProgress,
-    isValidated,
-  } = useLetterStabilization({
+  const { displayedLetter, progress: stableProgress, isValidated } = useLetterStabilization({
     predictedLetter,
     isActive: isStreaming,
   });
 
-  // Announce changes for screen readers
-  const announce = useCallback((message: string) => {
-    setAnnouncement(message);
-    setTimeout(() => setAnnouncement(""), 1000);
-  }, []);
-
   const pickRandomLetter = useCallback(() => {
     const letter = ASL_ALPHABET[Math.floor(Math.random() * ASL_ALPHABET.length)];
     setTargetLetter(letter);
-    announce(`Nouvelle lettre cible : ${letter}`);
-  }, [announce]);
+  }, []);
 
   const handleModeChange = useCallback((newMode: PracticeMode) => {
     setMode(newMode);
-    announce(`Mode ${newMode === "free" ? "libre" : "challenge"} activé`);
     if (newMode === "free") {
       pickRandomLetter();
     } else {
       setChallengeProgress([]);
     }
-  }, [pickRandomLetter, announce]);
+  }, [pickRandomLetter]);
 
   const triggerCelebration = useCallback(() => {
     setShowCelebration(true);
-    announce("Bravo ! Lettre validée !");
     setTimeout(() => setShowCelebration(false), 1500);
-  }, [announce]);
+  }, []);
 
   const resetGame = useCallback(() => {
     setScore(0);
@@ -107,9 +60,8 @@ export default function PracticePage() {
     setChallengeProgress([]);
     setCurrentChallenge(0);
     setLastValidatedLetter(null);
-    announce("Partie réinitialisée");
     if (mode === "free") pickRandomLetter();
-  }, [mode, pickRandomLetter, announce]);
+  }, [mode, pickRandomLetter]);
 
   useEffect(() => {
     if (mode === "free" && !targetLetter) {
@@ -117,19 +69,30 @@ export default function PracticePage() {
     }
   }, [mode, targetLetter, pickRandomLetter]);
 
-  useEffect(() => {
-    if (isStreaming && displayedLetter) {
-      setShowHints(false);
-      setSelectedHintLetter(null);
-    }
-  }, [isStreaming, displayedLetter]);
+  const showXpGain = useCallback((xp: number, message: string) => {
+    setXpNotification({ xp, message });
+    setTimeout(() => setXpNotification(null), 2000);
+  }, []);
 
-  // Announce detected letter
-  useEffect(() => {
-    if (displayedLetter && isValidated) {
-      announce(`Lettre détectée : ${displayedLetter}`);
+  const saveProgression = useCallback(async (letter: string, isChallenge = false, word?: string) => {
+    if (!user) return;
+    
+    try {
+      if (isChallenge && word) {
+        const result = await recordChallengeComplete(user.uid, word, true);
+        showXpGain(result.xpGained, "Challenge terminé !");
+      } else {
+        const result = await recordLetterValidation(user.uid, letter);
+        let message = `+${result.xpGained} XP`;
+        if (result.letterMastered) message = `${letter} maîtrisée ! +${result.xpGained} XP`;
+        if (result.newLevel) message += " Niveau supérieur !";
+        showXpGain(result.xpGained, message);
+      }
+      refreshProfile();
+    } catch (error) {
+      console.error("Error saving progression:", error);
     }
-  }, [displayedLetter, isValidated, announce]);
+  }, [user, showXpGain, refreshProfile]);
 
   useEffect(() => {
     if (!isValidated || !displayedLetter) return;
@@ -141,6 +104,7 @@ export default function PracticePage() {
       setScore((s) => s + SCORING.FREE_MODE_SUCCESS);
       setStreak((s) => s + 1);
       triggerCelebration();
+      saveProgression(displayedLetter);
       setTimeout(pickRandomLetter, 1500);
     }
 
@@ -156,25 +120,17 @@ export default function PracticePage() {
         if (newProgress.length === challenge.word.length) {
           setScore((s) => s + SCORING.CHALLENGE_COMPLETE + streak * SCORING.STREAK_BONUS_PER);
           triggerCelebration();
+          saveProgression(displayedLetter, true, challenge.word);
           setTimeout(() => {
             setChallengeProgress([]);
             setCurrentChallenge((c) => (c + 1) % CHALLENGES.length);
           }, 2000);
+        } else {
+          saveProgression(displayedLetter);
         }
       }
     }
-  }, [
-    isValidated,
-    displayedLetter,
-    lastValidatedLetter,
-    mode,
-    targetLetter,
-    challengeProgress,
-    currentChallenge,
-    streak,
-    pickRandomLetter,
-    triggerCelebration,
-  ]);
+  }, [isValidated, displayedLetter, lastValidatedLetter, mode, targetLetter, challengeProgress, currentChallenge, streak, pickRandomLetter, triggerCelebration, saveProgression]);
 
   const isCorrectLetter = (() => {
     if (!displayedLetter) return false;
@@ -186,417 +142,417 @@ export default function PracticePage() {
     return false;
   })();
 
-  return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950">
-      {/* Live region for screen reader announcements */}
-      <div 
-        role="status" 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className="sr-only"
-      >
-        {announcement}
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin" />
       </div>
+    );
+  }
 
-      {/* Toast */}
+  return (
+    <GameBackground variant="practice">
+      {/* Toasts */}
       <AnimatePresence>
         {showCelebration && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            role="alert"
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold text-sm shadow-lg"
+            role="status"
+            aria-live="polite"
           >
             ✓ Bien joué !
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800">
-        <nav className="max-w-5xl mx-auto px-3 sm:px-4 h-12 sm:h-14 flex items-center justify-between" aria-label="Navigation principale">
-          <Link 
-            href="/" 
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 rounded"
-            aria-label="Retour à l'accueil"
+      <AnimatePresence>
+        {xpNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -20, x: "-50%" }}
+            className="fixed top-20 left-1/2 z-50 px-4 py-2 bg-orange-500 text-white rounded-full font-semibold text-sm shadow-lg"
+            role="status"
+            aria-live="polite"
           >
-            ← Retour
-          </Link>
+            {xpNotification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Header */}
+      <GameHeader title="Pratique libre" />
+
+      <main className="pt-24 pb-8 px-4">
+        <div className="max-w-6xl mx-auto">
           
-          <div className="flex items-center gap-3" aria-label="Score actuel">
-            <span className="text-sm">
-              <span className="font-bold text-neutral-900 dark:text-white" aria-label={`Score : ${score} points`}>{score}</span>
-              <span className="text-neutral-400 ml-1 hidden sm:inline">pts</span>
-            </span>
-            {streak > 2 && (
-              <span 
-                className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-medium"
-                aria-label={`Série de ${streak}`}
-              >
-                🔥 {streak}
-              </span>
-            )}
+          {/* Mode selector */}
+          <div 
+            className="flex justify-center gap-2 py-6 border-b border-neutral-200 dark:border-neutral-800"
+            role="tablist"
+            aria-label="Modes de pratique"
+          >
+            <button
+              onClick={() => handleModeChange("free")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 ${
+                mode === "free"
+                  ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+              }`}
+              role="tab"
+              aria-selected={mode === "free"}
+              aria-controls="practice-panel"
+              id="tab-free"
+            >
+              Lettre aléatoire
+            </button>
+            <button
+              onClick={() => handleModeChange("challenge")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 ${
+                mode === "challenge"
+                  ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+              }`}
+              role="tab"
+              aria-selected={mode === "challenge"}
+              aria-controls="practice-panel"
+              id="tab-challenge"
+            >
+              Épeler un mot
+            </button>
           </div>
-        </nav>
-      </header>
 
-      <main id="main-content" className="pt-14 sm:pt-16 pb-6 sm:pb-12 px-3 sm:px-4">
-        <div className="max-w-5xl mx-auto">
-          
-          {/* Mode + Target */}
-          <div className="mb-4 sm:mb-6">
-            {/* Mode selector */}
-            <div className="flex justify-center gap-1 sm:gap-2 mb-4 sm:mb-6" role="tablist" aria-label="Sélection du mode">
-              <button
-                onClick={() => handleModeChange("free")}
-                role="tab"
-                aria-selected={mode === "free"}
-                aria-controls="practice-content"
-                className={`px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${
-                  mode === "free"
-                    ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
-                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                }`}
-              >
-                Libre
-              </button>
-              <button
-                onClick={() => handleModeChange("challenge")}
-                role="tab"
-                aria-selected={mode === "challenge"}
-                aria-controls="practice-content"
-                className={`px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${
-                  mode === "challenge"
-                    ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
-                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                }`}
-              >
-                Challenge
-              </button>
-            </div>
-
-            {/* Target letter */}
-            <div id="practice-content" role="tabpanel">
-              {mode === "free" && targetLetter && (
-                <div className="text-center" aria-label={`Lettre à signer : ${targetLetter}`}>
-                  <p className="text-xs sm:text-sm text-neutral-500 mb-1" id="target-label">Signe la lettre</p>
-                  <motion.span
+          {/* Layout 3 colonnes */}
+          <div 
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 pt-6"
+            role="tabpanel"
+            id="practice-panel"
+            aria-labelledby={mode === "free" ? "tab-free" : "tab-challenge"}
+          >
+            
+            {/* Colonne gauche - Lettre cible */}
+            <div className="lg:col-span-3 order-1">
+              <div className="lg:sticky lg:top-20">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                  {mode === "free" ? "Signe cette lettre" : "Épelle le mot"}
+                </p>
+                
+                {mode === "free" && targetLetter && (
+                  <motion.div
                     key={targetLetter}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="inline-block text-6xl sm:text-7xl md:text-8xl font-black text-orange-500"
-                    aria-labelledby="target-label"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="relative"
+                    role="status"
+                    aria-live="polite"
+                    aria-label={`Lettre cible : ${targetLetter}`}
                   >
-                    {targetLetter}
-                  </motion.span>
-                </div>
-              )}
+                    {/* Lettre principale qui déborde */}
+                    <span className="text-[140px] sm:text-[180px] lg:text-[220px] font-black leading-none text-orange-500 block -ml-2 lg:-ml-4">
+                      {targetLetter}
+                    </span>
+                    {/* Ligne décorative */}
+                    <div className="absolute -bottom-2 left-0 w-16 h-1 bg-orange-500/30 rounded-full" aria-hidden="true" />
+                  </motion.div>
+                )}
 
-              {mode === "challenge" && (
-                <div className="text-center" aria-label={`Mot à épeler : ${CHALLENGES[currentChallenge].word}`}>
-                  <p className="text-xs sm:text-sm text-neutral-500 mb-1">Épelle</p>
-                  <div className="flex justify-center gap-1 sm:gap-2" role="list" aria-label="Lettres du mot">
-                    {CHALLENGES[currentChallenge].word.split("").map((letter, i) => (
-                      <span
-                        key={i}
-                        role="listitem"
-                        aria-label={`${letter}${i < challengeProgress.length ? ", validée" : i === challengeProgress.length ? ", en cours" : ", à venir"}`}
-                        className={`text-3xl sm:text-4xl md:text-5xl font-black ${
-                          i < challengeProgress.length
-                            ? "text-green-500"
-                            : i === challengeProgress.length
-                            ? "text-orange-500"
-                            : "text-neutral-300 dark:text-neutral-700"
-                        }`}
-                      >
-                        {letter}
-                      </span>
-                    ))}
+                {mode === "challenge" && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-neutral-500">
+                      {CHALLENGES[currentChallenge].hint}
+                    </p>
+                    <div className="flex gap-2 flex-wrap" role="list" aria-label="Progression du mot">
+                      {CHALLENGES[currentChallenge].word.split("").map((letter, i) => (
+                        <span
+                          key={i}
+                          className={`text-4xl sm:text-5xl font-black ${
+                            i < challengeProgress.length
+                              ? "text-green-500"
+                              : i === challengeProgress.length
+                              ? "text-orange-500"
+                              : "text-neutral-300 dark:text-neutral-700"
+                          }`}
+                          role="listitem"
+                          aria-label={`Lettre ${letter}${i < challengeProgress.length ? ", complétée" : i === challengeProgress.length ? ", en cours" : ", à venir"}`}
+                        >
+                          {letter}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {mode === "free" && (
+                  <button
+                    onClick={pickRandomLetter}
+                    className="mt-4 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    aria-label="Choisir une autre lettre aléatoire"
+                  >
+                    Autre lettre
+                  </button>
+                )}
+
+                {/* Stats mobile */}
+                <div className="flex gap-4 mt-6 lg:mt-8 lg:flex-col">
+                  <div>
+                    <p className="text-3xl font-black">{score}</p>
+                    <p className="text-xs text-neutral-500">Points</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black">{streak}</p>
+                    <p className="text-xs text-neutral-500">Série</p>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
 
-          {/* Main layout */}
-          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6">
-            
-            {/* Camera */}
-            <section className="lg:col-span-2 order-1" aria-label="Zone de pratique avec webcam">
-              <div className="relative aspect-[4/3] sm:aspect-video rounded-xl sm:rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-800">
-                <video 
-                  ref={videoRef} 
-                  className="hidden"
-                  playsInline 
-                  muted 
-                  autoPlay
-                  aria-hidden="true"
-                />
+            {/* Colonne centrale - Webcam */}
+            <div className="lg:col-span-6 order-2">
+              <div 
+                className="relative aspect-[4/3] bg-neutral-50 dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm"
+                role="region"
+                aria-label="Zone de la caméra pour la détection des signes"
+              >
+                {/* Coins décoratifs */}
+                <div className="absolute top-3 left-3 w-4 h-4 border-l-2 border-t-2 border-neutral-300 dark:border-neutral-700 rounded-tl" aria-hidden="true" />
+                <div className="absolute top-3 right-3 w-4 h-4 border-r-2 border-t-2 border-neutral-300 dark:border-neutral-700 rounded-tr" aria-hidden="true" />
+                <div className="absolute bottom-3 left-3 w-4 h-4 border-l-2 border-b-2 border-neutral-300 dark:border-neutral-700 rounded-bl" aria-hidden="true" />
+                <div className="absolute bottom-3 right-3 w-4 h-4 border-r-2 border-b-2 border-neutral-300 dark:border-neutral-700 rounded-br" aria-hidden="true" />
+                
+                <video ref={videoRef} className="hidden" playsInline muted autoPlay aria-hidden="true" />
                 <canvas
                   ref={canvasRef}
                   className={`absolute inset-0 w-full h-full ${isStreaming ? "block" : "hidden"}`}
-                  style={{ objectFit: 'cover' }}
-                  aria-label="Flux vidéo de la webcam avec détection de la main"
+                  style={{ objectFit: "cover" }}
+                  aria-label="Flux vidéo avec détection de la main"
                   role="img"
                 />
 
+                {/* État initial */}
                 {!isStreaming && !isLoading && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                    <p className="text-neutral-500 mb-3 text-sm sm:text-base text-center" id="camera-instruction">
-                      Active ta webcam pour commencer
-                    </p>
-                    <button
-                      onClick={startCamera}
-                      aria-describedby="camera-instruction"
-                      className="px-5 sm:px-6 py-2.5 sm:py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold text-sm sm:text-base hover:scale-105 transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
-                    >
-                      Activer 📷
-                    </button>
-                  </div>
+                  <CameraPlaceholder 
+                    onStartCamera={startCamera}
+                    title="Active ta webcam pour commencer"
+                    subtitle={mode === "free" ? "Signe des lettres au hasard" : "Épelle des mots lettre par lettre"}
+                  />
                 )}
 
+                {/* Chargement */}
                 {isLoading && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6" role="status" aria-label="Chargement en cours">
-                    {/* Spinner animé */}
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 mb-5">
-                      <div className="absolute inset-0 border-4 border-neutral-200 dark:border-neutral-700 rounded-full" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6" role="status" aria-live="polite" aria-busy="true">
+                    <div className="w-12 h-12 border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-4" aria-hidden="true" />
+                    <p className="font-medium mb-1">{loadingStep}</p>
+                    <div 
+                      className="w-48 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden"
+                      role="progressbar"
+                      aria-valuenow={loadingProgress}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Progression du chargement"
+                    >
                       <div 
-                        className="absolute inset-0 border-4 border-transparent border-t-orange-500 rounded-full animate-spin"
-                        style={{ animationDuration: '1s' }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg sm:text-xl font-bold text-neutral-600 dark:text-neutral-300">
-                          {loadingProgress}%
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Message de chargement */}
-                    <p className="text-neutral-900 dark:text-white font-medium text-sm sm:text-base mb-2">
-                      {loadingStep}
-                    </p>
-                    
-                    {/* Barre de progression */}
-                    <div className="w-48 sm:w-64 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden mb-4">
-                      <div 
-                        className="h-full bg-orange-500 transition-all duration-300 ease-out"
+                        className="h-full bg-orange-500 transition-all"
                         style={{ width: `${loadingProgress}%` }}
                       />
                     </div>
-                    
-                    {/* Message rassurant */}
-                    <p className="text-neutral-500 text-xs sm:text-sm text-center max-w-xs">
-                      Le premier chargement peut prendre quelques secondes, c&apos;est normal !
+                    <p className="text-xs text-neutral-500 mt-3">
+                      Le premier chargement peut prendre quelques secondes
                     </p>
                   </div>
                 )}
 
+                {/* Erreur */}
                 {error && (
-                  <div className="absolute bottom-3 left-3 right-3 px-3 py-2 bg-red-500 text-white text-xs sm:text-sm rounded-lg" role="alert">
+                  <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-red-500 text-white text-sm rounded-lg" role="alert" aria-live="assertive">
                     {error}
                   </div>
                 )}
 
+                {/* Overlays quand streaming */}
                 {isStreaming && (
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 text-white text-xs" aria-label="Webcam active">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
-                    LIVE
-                  </div>
-                )}
-
-                {isStreaming && displayedLetter && (
-                  <div className="absolute top-3 right-3" aria-live="polite">
-                    <div
-                      className={`px-3 py-2 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl ${
-                        isValidated && isCorrectLetter
-                          ? "bg-green-500 text-white"
-                          : "bg-black/70 text-white"
-                      }`}
-                      aria-label={`Lettre détectée : ${displayedLetter}, confiance ${confidence}%${isValidated && isCorrectLetter ? ", validée !" : ""}`}
-                    >
-                      <span className="text-2xl sm:text-3xl font-black block">{displayedLetter}</span>
-                      <span className="text-[10px] sm:text-xs opacity-70">{confidence}%</span>
-                      {!isValidated && (
-                        <div className="mt-1.5 h-1 w-12 sm:w-16 bg-white/20 rounded-full overflow-hidden" role="progressbar" aria-valuenow={stableProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Progression de validation">
-                          <div
-                            className="h-full bg-white transition-all"
-                            style={{ width: `${stableProgress}%` }}
-                          />
-                        </div>
-                      )}
+                  <>
+                    {/* LIVE */}
+                    <div className="absolute top-4 left-4 flex items-center gap-2" role="status" aria-live="polite">
+                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" aria-hidden="true" />
+                      <span className="text-xs text-white font-medium bg-black/50 px-2 py-1 rounded">
+                        En direct
+                      </span>
                     </div>
-                  </div>
-                )}
 
-                {isStreaming && !displayedLetter && (
-                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 text-white text-xs" aria-label="En attente de détection de la main">
-                    👋 Montre ta main
-                  </div>
+                    {/* Instruction si pas de main */}
+                    {!displayedLetter && (
+                      <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-black/50 text-white text-sm rounded-lg text-center">
+                        Montre ta main devant la caméra
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
+              {/* Actions */}
               {isStreaming && (
-                <div className="flex justify-center gap-4 mt-3">
+                <div className="flex justify-center gap-4 mt-4" role="group" aria-label="Actions de contrôle">
                   <button
                     onClick={stopCamera}
-                    className="text-xs sm:text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 rounded px-2 py-1"
-                    aria-label="Arrêter la webcam"
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    aria-label="Mettre en pause la caméra"
                   >
-                    Arrêter
+                    Pause
                   </button>
                   <button
                     onClick={resetGame}
-                    className="text-xs sm:text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 rounded px-2 py-1"
-                    aria-label="Recommencer la partie"
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    aria-label="Recommencer la session"
                   >
                     Recommencer
                   </button>
+                  <Link
+                    href="/play"
+                    onClick={stopCamera}
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    aria-label="Terminer et retourner au menu"
+                  >
+                    Terminer
+                  </Link>
                 </div>
               )}
-            </section>
+            </div>
 
-            {/* Sidebar */}
-            <aside className="order-2 flex flex-col gap-3 sm:gap-4" aria-label="Outils et statistiques">
-              
-              {/* Alphabet */}
-              <section className="p-3 sm:p-5 rounded-xl sm:rounded-2xl border-2 border-neutral-200 dark:border-neutral-800" aria-labelledby="alphabet-title">
-                <h2 id="alphabet-title" className="font-bold text-sm sm:text-base mb-2 sm:mb-3">Alphabet</h2>
-                <div className="grid grid-cols-9 sm:grid-cols-6 gap-1 sm:gap-1.5" role="group" aria-label="Sélection de lettre cible">
-                  {ASL_ALPHABET.map((letter) => {
-                    const isTarget = targetLetter === letter;
-                    const isDetected = displayedLetter === letter;
-
-                    return (
-                      <button
-                        key={letter}
-                        onClick={() => mode === "free" && setTargetLetter(letter)}
-                        disabled={mode !== "free"}
-                        aria-label={`${letter}${isTarget ? ", cible actuelle" : ""}${isDetected ? ", détectée" : ""}`}
-                        aria-pressed={isTarget}
-                        className={`aspect-square rounded sm:rounded-lg text-xs sm:text-sm font-semibold transition-all focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-orange-500 ${
-                          isDetected
-                            ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
-                            : isTarget
-                            ? "bg-orange-500 text-white"
-                            : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
-                        } ${mode === "free" ? "cursor-pointer active:scale-95" : "cursor-default"}`}
-                      >
-                        {letter}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center justify-center gap-3 sm:gap-4 text-[10px] sm:text-xs text-neutral-500 mt-2 sm:mt-3">
-                  <span className="flex items-center gap-1">
-                    <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-orange-500" aria-hidden="true" />
-                    cible
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-neutral-900 dark:bg-white" aria-hidden="true" />
-                    détecté
-                  </span>
-                </div>
-              </section>
-
-              {/* Stats + Help */}
-              <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
+            {/* Colonne droite - Résultat */}
+            <div className="lg:col-span-3 order-3">
+              <div className="lg:sticky lg:top-20">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                  Lettre détectée
+                </p>
                 
-                {/* Stats */}
-                <section className="p-3 sm:p-5 rounded-xl sm:rounded-2xl border-2 border-neutral-200 dark:border-neutral-800" aria-labelledby="stats-title">
-                  <h2 id="stats-title" className="font-bold text-sm sm:text-base mb-2 sm:mb-3">Session</h2>
-                  <div className="flex justify-around sm:grid sm:grid-cols-2 gap-2 sm:gap-4 text-center">
-                    <div>
-                      <p className="text-2xl sm:text-3xl font-black" aria-label={`${score} points`}>{score}</p>
-                      <p className="text-[10px] sm:text-xs text-neutral-500">Points</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl sm:text-3xl font-black" aria-label={`Série de ${streak}`}>{streak}</p>
-                      <p className="text-[10px] sm:text-xs text-neutral-500">Série</p>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Help */}
-                <section className="p-3 sm:p-5 rounded-xl sm:rounded-2xl border-2 border-neutral-200 dark:border-neutral-800" aria-labelledby="help-title">
-                  <div className="flex items-center justify-between mb-2 sm:mb-3">
-                    <h2 id="help-title" className="font-bold text-sm sm:text-base">Aide</h2>
-                    <button
-                      onClick={() => {
-                        if (!isStreaming || !displayedLetter) {
-                          setShowHints(!showHints);
-                        }
-                      }}
-                      disabled={isStreaming && !!displayedLetter}
-                      aria-expanded={showHints}
-                      aria-controls="hints-panel"
-                      className={`text-[10px] sm:text-xs px-2 py-0.5 rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${
-                        isStreaming && displayedLetter
-                          ? "text-neutral-300 cursor-not-allowed"
-                          : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                      }`}
+                <AnimatePresence mode="wait">
+                  {displayedLetter ? (
+                    <motion.div
+                      key={displayedLetter}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      role="status"
+                      aria-live="polite"
+                      aria-label={`Lettre détectée : ${displayedLetter}`}
                     >
-                      {showHints ? "Masquer" : "Voir"}
-                    </button>
-                  </div>
+                      <span className={`text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none ${
+                        isValidated && isCorrectLetter 
+                          ? "text-green-500" 
+                          : isCorrectLetter
+                          ? "text-orange-500"
+                          : "text-neutral-900 dark:text-white"
+                      }`}>
+                        {displayedLetter}
+                      </span>
+                    </motion.div>
+                  ) : (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none text-neutral-200 dark:text-neutral-800"
+                      aria-label="Aucune lettre détectée"
+                    >
+                      ?
+                    </motion.span>
+                  )}
+                </AnimatePresence>
 
-                  <div id="hints-panel">
-                    {isStreaming && displayedLetter ? (
-                      <p className="text-[10px] sm:text-xs text-neutral-400 italic">
-                        Masqué pendant que tu signes
-                      </p>
-                    ) : showHints ? (
-                      <div className="space-y-2 sm:space-y-3">
-                        <div className="grid grid-cols-7 sm:grid-cols-9 gap-0.5 sm:gap-1" role="group" aria-label="Sélectionner une lettre pour voir l'aide">
-                          {ASL_ALPHABET.map((letter) => (
-                            <button
-                              key={letter}
-                              onClick={() => setSelectedHintLetter(letter)}
-                              aria-pressed={selectedHintLetter === letter}
-                              aria-label={`Voir l'aide pour ${letter}`}
-                              className={`aspect-square rounded text-[10px] sm:text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-orange-500 ${
-                                selectedHintLetter === letter
-                                  ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
-                                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
-                              }`}
-                            >
-                              {letter}
-                            </button>
-                          ))}
+                {/* Indicateurs */}
+                {displayedLetter && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-neutral-500">
+                      <span>Confiance</span>
+                      <span className="font-bold text-neutral-900 dark:text-white">{confidence}%</span>
+                    </div>
+                    
+                    {!isValidated && (
+                      <div>
+                        <div 
+                          className="h-1.5 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden"
+                          role="progressbar"
+                          aria-valuenow={stableProgress}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label="Progression de la validation du geste"
+                        >
+                          <div
+                            className="h-full bg-orange-500 transition-all"
+                            style={{ width: `${stableProgress}%` }}
+                          />
                         </div>
-
-                        <AnimatePresence mode="wait">
-                          {selectedHintLetter && (
-                            <motion.div
-                              key={selectedHintLetter}
-                              initial={{ opacity: 0, y: 5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -5 }}
-                              className="p-2 sm:p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800"
-                              role="region"
-                              aria-label={`Aide pour la lettre ${selectedHintLetter}`}
-                            >
-                              <p className="text-lg sm:text-2xl font-black">{selectedHintLetter}</p>
-                              <p className="text-[10px] sm:text-sm text-neutral-600 dark:text-neutral-400 leading-snug">
-                                {SIGN_HINTS[selectedHintLetter]}
-                              </p>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          Maintiens la position...
+                        </p>
                       </div>
-                    ) : (
-                      <p className="text-[10px] sm:text-xs text-neutral-400">
-                        Comment signer ?
-                      </p>
                     )}
-                  </div>
-                </section>
-              </div>
 
-            </aside>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
+                      isCorrectLetter 
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                        : "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                    }`}>
+                      {isCorrectLetter ? "✓ Correct" : "→ Continue"}
+                    </div>
+                  </div>
+                )}
+
+                {/* Alphabet */}
+                <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3" id="alphabet-label">
+                    Alphabet
+                  </p>
+                  <div 
+                    className="grid grid-cols-6 lg:grid-cols-5 gap-1.5"
+                    role="listbox"
+                    aria-labelledby="alphabet-label"
+                    aria-activedescendant={targetLetter ? `letter-${targetLetter}` : undefined}
+                  >
+                    {ASL_ALPHABET.map((letter) => {
+                      const isTarget = targetLetter === letter;
+                      const isDetected = displayedLetter === letter;
+
+                      return (
+                        <button
+                          key={letter}
+                          id={`letter-${letter}`}
+                          onClick={() => mode === "free" && setTargetLetter(letter)}
+                          disabled={mode !== "free"}
+                          className={`aspect-square rounded-lg text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 ${
+                            isDetected
+                              ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                              : isTarget
+                              ? "bg-orange-500 text-white"
+                              : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                          } ${mode === "free" ? "cursor-pointer" : "cursor-default"}`}
+                          role="option"
+                          aria-selected={isTarget}
+                          aria-label={`Lettre ${letter}${isTarget ? ", cible actuelle" : ""}${isDetected ? ", détectée" : ""}`}
+                        >
+                          {letter}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-neutral-500 mt-3" aria-hidden="true">
+                    <span className="flex items-center gap-1">
+                      <span className="w-3 h-3 rounded bg-orange-500" />
+                      cible
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-3 h-3 rounded bg-neutral-900 dark:bg-white" />
+                      détecté
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
-    </div>
+    </GameBackground>
   );
 }
