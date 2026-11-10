@@ -55,11 +55,15 @@ export function Navbar() {
             <Link 
               href="/friends"
               className="relative text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded p-2"
-              aria-label="Amis"
+              aria-label={hasInvites ? "Amis - Nouvelles invitations" : "Amis"}
             >
-              <Users className="w-5 h-5" />
+              <Users className="w-5 h-5" aria-hidden="true" />
               {hasInvites && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                <span 
+                  className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"
+                  aria-label="Nouvelles invitations"
+                  role="status"
+                />
               )}
             </Link>
           )}

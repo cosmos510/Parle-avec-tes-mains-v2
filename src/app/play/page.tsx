@@ -37,7 +37,7 @@ export default function PlayHub() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-24 pb-16 px-4">
+      <main className="min-h-screen pt-24 pb-16 px-4" role="main" aria-labelledby="play-heading">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <motion.div
@@ -45,7 +45,7 @@ export default function PlayHub() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-12"
           >
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4">
+            <h1 id="play-heading" className="text-4xl sm:text-5xl font-black tracking-tight mb-4">
               Jouer
             </h1>
             <p className="text-neutral-600 dark:text-neutral-400 text-lg">
@@ -54,11 +54,12 @@ export default function PlayHub() {
           </motion.div>
 
           {/* Game modes list */}
-          <motion.div
+          <motion.nav
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
             className="space-y-4"
+            aria-label="Modes de jeu disponibles"
           >
             {GAME_MODES.map((mode, index) => (
               <motion.div
@@ -69,11 +70,12 @@ export default function PlayHub() {
               >
                 <Link
                   href={mode.href}
-                  className={`group block p-6 rounded-2xl border transition-all hover:shadow-lg ${
+                  className={`group block p-6 rounded-2xl border transition-all hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 ${
                     mode.highlight 
                       ? "border-orange-500 bg-orange-50 dark:bg-orange-900/10" 
                       : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
                   }`}
+                  aria-label={`${mode.title} - ${mode.description}`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -98,6 +100,7 @@ export default function PlayHub() {
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -110,7 +113,7 @@ export default function PlayHub() {
                 </Link>
               </motion.div>
             ))}
-          </motion.div>
+          </motion.nav>
 
           {/* Stats teaser */}
           <motion.div
@@ -121,7 +124,8 @@ export default function PlayHub() {
           >
             <Link
               href="/profile"
-              className="flex items-center justify-between group"
+              className="flex items-center justify-between group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded-lg p-2 -m-2"
+              aria-label="Voir mes statistiques - Progression, badges, historique"
             >
               <div>
                 <p className="font-medium group-hover:text-orange-500 transition-colors">
@@ -136,6 +140,7 @@ export default function PlayHub() {
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"

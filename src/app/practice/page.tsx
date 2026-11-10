@@ -158,6 +158,8 @@ export default function PracticePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold text-sm shadow-lg"
+            role="status"
+            aria-live="polite"
           >
             ✓ Bien joué !
           </motion.div>
@@ -171,6 +173,8 @@ export default function PracticePage() {
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -20, x: "-50%" }}
             className="fixed top-20 left-1/2 z-50 px-4 py-2 bg-orange-500 text-white rounded-full font-semibold text-sm shadow-lg"
+            role="status"
+            aria-live="polite"
           >
             {xpNotification.message}
           </motion.div>
@@ -194,31 +198,48 @@ export default function PracticePage() {
         <div className="max-w-6xl mx-auto">
           
           {/* Mode selector */}
-          <div className="flex justify-center gap-2 py-6 border-b border-neutral-200 dark:border-neutral-800">
+          <div 
+            className="flex justify-center gap-2 py-6 border-b border-neutral-200 dark:border-neutral-800"
+            role="tablist"
+            aria-label="Modes de pratique"
+          >
             <button
               onClick={() => handleModeChange("free")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 ${
                 mode === "free"
                   ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
                   : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
               }`}
+              role="tab"
+              aria-selected={mode === "free"}
+              aria-controls="practice-panel"
+              id="tab-free"
             >
               Lettre aléatoire
             </button>
             <button
               onClick={() => handleModeChange("challenge")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 ${
                 mode === "challenge"
                   ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
                   : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
               }`}
+              role="tab"
+              aria-selected={mode === "challenge"}
+              aria-controls="practice-panel"
+              id="tab-challenge"
             >
               Épeler un mot
             </button>
           </div>
 
           {/* Layout 3 colonnes */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 pt-6">
+          <div 
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 pt-6"
+            role="tabpanel"
+            id="practice-panel"
+            aria-labelledby={mode === "free" ? "tab-free" : "tab-challenge"}
+          >
             
             {/* Colonne gauche - Lettre cible */}
             <div className="lg:col-span-3 order-1">
@@ -232,6 +253,9 @@ export default function PracticePage() {
                     key={targetLetter}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    role="status"
+                    aria-live="polite"
+                    aria-label={`Lettre cible : ${targetLetter}`}
                   >
                     <span className="text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none text-orange-500">
                       {targetLetter}
@@ -244,7 +268,7 @@ export default function PracticePage() {
                     <p className="text-sm text-neutral-500">
                       {CHALLENGES[currentChallenge].hint}
                     </p>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-2 flex-wrap" role="list" aria-label="Progression du mot">
                       {CHALLENGES[currentChallenge].word.split("").map((letter, i) => (
                         <span
                           key={i}
@@ -255,6 +279,8 @@ export default function PracticePage() {
                               ? "text-orange-500"
                               : "text-neutral-300 dark:text-neutral-700"
                           }`}
+                          role="listitem"
+                          aria-label={`Lettre ${letter}${i < challengeProgress.length ? ", complétée" : i === challengeProgress.length ? ", en cours" : ", à venir"}`}
                         >
                           {letter}
                         </span>
@@ -266,7 +292,8 @@ export default function PracticePage() {
                 {mode === "free" && (
                   <button
                     onClick={pickRandomLetter}
-                    className="mt-4 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                    className="mt-4 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    aria-label="Choisir une autre lettre aléatoire"
                   >
                     Autre lettre
                   </button>
@@ -288,19 +315,25 @@ export default function PracticePage() {
 
             {/* Colonne centrale - Webcam */}
             <div className="lg:col-span-6 order-2">
-              <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden border-2 border-neutral-200 dark:border-neutral-800">
-                <video ref={videoRef} className="hidden" playsInline muted autoPlay />
+              <div 
+                className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden border-2 border-neutral-200 dark:border-neutral-800"
+                role="region"
+                aria-label="Zone de la caméra pour la détection des signes"
+              >
+                <video ref={videoRef} className="hidden" playsInline muted autoPlay aria-hidden="true" />
                 <canvas
                   ref={canvasRef}
                   className={`absolute inset-0 w-full h-full ${isStreaming ? "block" : "hidden"}`}
                   style={{ objectFit: "cover" }}
+                  aria-label="Flux vidéo avec détection de la main"
+                  role="img"
                 />
 
                 {/* État initial */}
                 {!isStreaming && !isLoading && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-                    <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4">
-                      <svg className="w-10 h-10 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4" aria-hidden="true">
+                      <svg className="w-10 h-10 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
                     </div>
@@ -309,7 +342,8 @@ export default function PracticePage() {
                     </p>
                     <button
                       onClick={startCamera}
-                      className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold hover:scale-105 transition-transform"
+                      className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold hover:scale-105 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                      aria-label="Activer la caméra pour commencer la pratique"
                     >
                       Activer la caméra
                     </button>
@@ -318,10 +352,17 @@ export default function PracticePage() {
 
                 {/* Chargement */}
                 {isLoading && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-                    <div className="w-12 h-12 border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-4" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6" role="status" aria-live="polite" aria-busy="true">
+                    <div className="w-12 h-12 border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-4" aria-hidden="true" />
                     <p className="font-medium mb-1">{loadingStep}</p>
-                    <div className="w-48 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                    <div 
+                      className="w-48 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden"
+                      role="progressbar"
+                      aria-valuenow={loadingProgress}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Progression du chargement"
+                    >
                       <div 
                         className="h-full bg-orange-500 transition-all"
                         style={{ width: `${loadingProgress}%` }}
@@ -335,7 +376,7 @@ export default function PracticePage() {
 
                 {/* Erreur */}
                 {error && (
-                  <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-red-500 text-white text-sm rounded-lg">
+                  <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-red-500 text-white text-sm rounded-lg" role="alert" aria-live="assertive">
                     {error}
                   </div>
                 )}
@@ -344,8 +385,8 @@ export default function PracticePage() {
                 {isStreaming && (
                   <>
                     {/* LIVE */}
-                    <div className="absolute top-4 left-4 flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                    <div className="absolute top-4 left-4 flex items-center gap-2" role="status" aria-live="polite">
+                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" aria-hidden="true" />
                       <span className="text-xs text-white font-medium bg-black/50 px-2 py-1 rounded">
                         En direct
                       </span>
@@ -363,16 +404,18 @@ export default function PracticePage() {
 
               {/* Actions */}
               {isStreaming && (
-                <div className="flex justify-center gap-4 mt-4">
+                <div className="flex justify-center gap-4 mt-4" role="group" aria-label="Actions de contrôle">
                   <button
                     onClick={stopCamera}
-                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    aria-label="Arrêter la caméra"
                   >
                     Arrêter la caméra
                   </button>
                   <button
                     onClick={resetGame}
-                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    aria-label="Recommencer la session"
                   >
                     Recommencer
                   </button>
@@ -394,6 +437,9 @@ export default function PracticePage() {
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
+                      role="status"
+                      aria-live="polite"
+                      aria-label={`Lettre détectée : ${displayedLetter}`}
                     >
                       <span className={`text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none ${
                         isValidated && isCorrectLetter 
@@ -410,6 +456,7 @@ export default function PracticePage() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none text-neutral-200 dark:text-neutral-800"
+                      aria-label="Aucune lettre détectée"
                     >
                       ?
                     </motion.span>
@@ -426,7 +473,14 @@ export default function PracticePage() {
                     
                     {!isValidated && (
                       <div>
-                        <div className="h-1.5 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+                        <div 
+                          className="h-1.5 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden"
+                          role="progressbar"
+                          aria-valuenow={stableProgress}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label="Progression de la validation du geste"
+                        >
                           <div
                             className="h-full bg-orange-500 transition-all"
                             style={{ width: `${stableProgress}%` }}
@@ -450,10 +504,15 @@ export default function PracticePage() {
 
                 {/* Alphabet */}
                 <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-                  <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3" id="alphabet-label">
                     Alphabet
                   </p>
-                  <div className="grid grid-cols-6 lg:grid-cols-5 gap-1.5">
+                  <div 
+                    className="grid grid-cols-6 lg:grid-cols-5 gap-1.5"
+                    role="listbox"
+                    aria-labelledby="alphabet-label"
+                    aria-activedescendant={targetLetter ? `letter-${targetLetter}` : undefined}
+                  >
                     {ASL_ALPHABET.map((letter) => {
                       const isTarget = targetLetter === letter;
                       const isDetected = displayedLetter === letter;
@@ -461,22 +520,26 @@ export default function PracticePage() {
                       return (
                         <button
                           key={letter}
+                          id={`letter-${letter}`}
                           onClick={() => mode === "free" && setTargetLetter(letter)}
                           disabled={mode !== "free"}
-                          className={`aspect-square rounded-lg text-sm font-bold transition-all ${
+                          className={`aspect-square rounded-lg text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 ${
                             isDetected
                               ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
                               : isTarget
                               ? "bg-orange-500 text-white"
                               : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                           } ${mode === "free" ? "cursor-pointer" : "cursor-default"}`}
+                          role="option"
+                          aria-selected={isTarget}
+                          aria-label={`Lettre ${letter}${isTarget ? ", cible actuelle" : ""}${isDetected ? ", détectée" : ""}`}
                         >
                           {letter}
                         </button>
                       );
                     })}
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-neutral-500 mt-3">
+                  <div className="flex items-center gap-4 text-xs text-neutral-500 mt-3" aria-hidden="true">
                     <span className="flex items-center gap-1">
                       <span className="w-3 h-3 rounded bg-orange-500" />
                       cible

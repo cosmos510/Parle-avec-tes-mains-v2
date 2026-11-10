@@ -246,6 +246,7 @@ export function InteractiveDemo() {
                 playsInline
                 muted
                 className="absolute opacity-0 pointer-events-none"
+                aria-hidden="true"
               />
 
               <AnimatePresence mode="wait">
@@ -260,6 +261,8 @@ export function InteractiveDemo() {
                     <canvas
                       ref={canvasRef}
                       className="w-full h-full object-cover"
+                      aria-label="Flux vidéo de la webcam avec détection de la main"
+                      role="img"
                     />
 
                     {/* Detection overlay */}
@@ -270,11 +273,13 @@ export function InteractiveDemo() {
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0 }}
                           className="absolute bottom-4 right-4 bg-white dark:bg-neutral-900 rounded-xl px-4 py-3 shadow-lg"
+                          role="status"
+                          aria-live="polite"
                         >
                           <p className="text-xs text-neutral-500 mb-1">
                             Détecté
                           </p>
-                          <span className="text-4xl font-black">
+                          <span className="text-4xl font-black" aria-label={`Lettre détectée : ${detectedLetter}`}>
                             {detectedLetter}
                           </span>
                         </motion.div>
@@ -282,14 +287,14 @@ export function InteractiveDemo() {
                     </AnimatePresence>
 
                     {/* Recording indicator + Timer */}
-                    <div className="absolute top-4 left-4 flex items-center gap-3">
+                    <div className="absolute top-4 left-4 flex items-center gap-3" role="status" aria-live="polite">
                       <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                        <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" aria-hidden="true" />
                         <span className="text-xs text-white font-medium bg-black/50 px-2 py-1 rounded">
                           En direct
                         </span>
                       </div>
-                      <span className="text-xs text-white font-medium bg-black/50 px-2 py-1 rounded">
+                      <span className="text-xs text-white font-medium bg-black/50 px-2 py-1 rounded" aria-label={`Temps restant : ${timeLeft} secondes`}>
                         {timeLeft}s
                       </span>
                     </div>
@@ -297,7 +302,7 @@ export function InteractiveDemo() {
                     {/* Stop button */}
                     <button
                       onClick={stopCamera}
-                      className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                      className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
                       aria-label="Arrêter la caméra"
                     >
                       <svg
@@ -305,6 +310,7 @@ export function InteractiveDemo() {
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"
@@ -322,8 +328,11 @@ export function InteractiveDemo() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="absolute inset-0 flex flex-col items-center justify-center p-6"
+                    role="status"
+                    aria-live="polite"
+                    aria-busy="true"
                   >
-                    <div className="w-12 h-12 border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-4" />
+                    <div className="w-12 h-12 border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-4" aria-hidden="true" />
                     <p className="text-neutral-500 text-sm">
                       Chargement du modèle IA...
                     </p>
@@ -355,12 +364,13 @@ export function InteractiveDemo() {
                     exit={{ opacity: 0 }}
                     className="absolute inset-0 flex flex-col items-center justify-center p-6"
                   >
-                    <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center mb-4">
+                    <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center mb-4" aria-hidden="true">
                       <svg
                         className="w-10 h-10 text-neutral-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"
@@ -379,7 +389,11 @@ export function InteractiveDemo() {
 
               {/* Error message */}
               {error && (
-                <div className="absolute inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/20">
+                <div 
+                  className="absolute inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/20"
+                  role="alert"
+                  aria-live="assertive"
+                >
                   <p className="text-red-600 dark:text-red-400 text-sm text-center px-4">
                     {error}
                   </p>
@@ -389,9 +403,9 @@ export function InteractiveDemo() {
 
             {/* Instructions */}
             <div className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-sm font-bold">
+              <ol className="space-y-4" aria-label="Instructions pour utiliser la démonstration">
+                <li className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-sm font-bold" aria-hidden="true">
                     1
                   </span>
                   <div>
@@ -400,9 +414,9 @@ export function InteractiveDemo() {
                       On ne stocke rien, tout reste sur ton appareil
                     </p>
                   </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-sm font-bold">
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-sm font-bold" aria-hidden="true">
                     2
                   </span>
                   <div>
@@ -411,9 +425,9 @@ export function InteractiveDemo() {
                       Poing fermé, pouce sur le côté
                     </p>
                   </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-sm font-bold">
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-sm font-bold" aria-hidden="true">
                     3
                   </span>
                   <div>
@@ -422,8 +436,8 @@ export function InteractiveDemo() {
                       En temps réel, directement dans ton navigateur
                     </p>
                   </div>
-                </div>
-              </div>
+                </li>
+              </ol>
 
               {/* CTA */}
               {!isActive && !isLoading && (
@@ -431,7 +445,8 @@ export function InteractiveDemo() {
                   onClick={startDemo}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 rounded-xl border-2 border-neutral-200 dark:border-neutral-700 hover:border-neutral-900 dark:hover:border-white transition-colors font-medium"
+                  className="w-full py-4 rounded-xl border-2 border-neutral-200 dark:border-neutral-700 hover:border-neutral-900 dark:hover:border-white transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                  aria-label={hasTriedDemo ? "Réessayer la démonstration" : "Essayer la démonstration maintenant"}
                 >
                   {hasTriedDemo ? "Réessayer" : "Essayer maintenant"}
                 </motion.button>
@@ -440,7 +455,8 @@ export function InteractiveDemo() {
               {hasTriedDemo && !isActive && !isLoading && (
                 <Link
                   href="/practice"
-                  className="block w-full py-4 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-center font-medium hover:opacity-90 transition-opacity"
+                  className="block w-full py-4 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-center font-medium hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                  aria-label="Commencer l'apprentissage des 26 lettres de l'alphabet LSF"
                 >
                   Continuer avec les 26 lettres
                 </Link>
