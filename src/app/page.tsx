@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { HeroSection } from "@/components/sections/hero";
+import { GameModesSection } from "@/components/sections/game-modes";
 import dynamic from "next/dynamic";
 
 // Lazy load les sections sous le fold pour améliorer le LCP
@@ -20,6 +21,7 @@ export default function Home() {
       <Navbar />
       <main id="main-content" role="main">
         <HeroSection />
+        <GameModesSection />
         <RoadmapSection />
         <AboutSection />
       </main>

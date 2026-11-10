@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMediaPipeHands } from "@/hooks/useMediaPipeHands";
 import { useLetterStabilization } from "@/hooks/useLetterStabilization";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +22,7 @@ interface LeaderboardEntry {
 }
 
 export default function SprintPage() {
+  const router = useRouter();
   const [gameState, setGameState] = useState<GameState>("idle");
   const [countdown, setCountdown] = useState(3);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -34,7 +36,14 @@ export default function SprintPage() {
   const [lastValidatedLetter, setLastValidatedLetter] = useState<string | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   const {
     videoRef,

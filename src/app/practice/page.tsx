@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMediaPipeHands } from "@/hooks/useMediaPipeHands";
 import { useLetterStabilization } from "@/hooks/useLetterStabilization";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,6 +41,7 @@ const SIGN_HINTS: Record<string, string> = {
 };
 
 export default function PracticePage() {
+  const router = useRouter();
   const [mode, setMode] = useState<PracticeMode>("free");
   const [currentChallenge, setCurrentChallenge] = useState(0);
   const [challengeProgress, setChallengeProgress] = useState<string[]>([]);
@@ -53,7 +55,14 @@ export default function PracticePage() {
   const [announcement, setAnnouncement] = useState("");
   const [xpNotification, setXpNotification] = useState<{ xp: number; message: string } | null>(null);
 
-  const { user, refreshProfile } = useAuth();
+  const { user, loading: authLoading, refreshProfile } = useAuth();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   const {
     videoRef,
