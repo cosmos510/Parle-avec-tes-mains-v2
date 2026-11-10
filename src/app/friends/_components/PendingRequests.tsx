@@ -6,7 +6,6 @@ import {
   acceptFriendRequest,
   declineFriendRequest,
   cancelFriendRequest,
-  type UserProfile 
 } from '@/lib/friends-service';
 import { 
   Check, 
@@ -17,9 +16,15 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 
+interface SimpleFriendProfile {
+  odId: string;
+  displayName: string;
+  photoURL?: string;
+}
+
 interface PendingRequestsProps {
-  incoming: UserProfile[];
-  outgoing: UserProfile[];
+  incoming: SimpleFriendProfile[];
+  outgoing: SimpleFriendProfile[];
   onUpdate: () => void;
 }
 

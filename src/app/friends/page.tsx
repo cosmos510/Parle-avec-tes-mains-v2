@@ -1,16 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { usePresence } from '@/hooks/usePresence';
+import { useSocket } from '@/contexts/SocketContext';
 import { 
-  getUserProfile,
-  getFriendsWithStatus,
-  getPendingRequests,
+  getFriendsAndPending,
   ensureUserProfile,
-  type UserProfile,
   type FriendInfo
 } from '@/lib/friends-service';
 import { Navbar } from '@/components/layout/navbar';
@@ -24,17 +21,29 @@ import { DuelInviteNotification } from './_components/DuelInviteNotification';
 
 export default function FriendsPage() {
   const { user, loading } = useAuth();
+  const { onlineUsers } = useSocket();
   const router = useRouter();
-  const [friends, setFriends] = useState<FriendInfo[]>([]);
+  const [friendsBase, setFriendsBase] = useState<Omit<FriendInfo, 'status' | 'lastSeen'>[]>([]);
   const [pendingRequests, setPendingRequests] = useState<{
-    incoming: UserProfile[];
-    outgoing: UserProfile[];
+    incoming: { odId: string; displayName: string; photoURL?: string }[];
+    outgoing: { odId: string; displayName: string; photoURL?: string }[];
   }>({ incoming: [], outgoing: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('friends');
   
-  // Activer la présence
-  usePresence('online');
+  // Combiner les données d'amis avec le statut en ligne du socket (temps réel)
+  const friends: FriendInfo[] = useMemo(() => {
+    return friendsBase.map(friend => ({
+      ...friend,
+      status: onlineUsers.has(friend.odId) ? 'online' as const : 'offline' as const,
+      lastSeen: undefined,
+    })).sort((a, b) => {
+      // En ligne d'abord
+      if (a.status === 'online' && b.status !== 'online') return -1;
+      if (b.status === 'online' && a.status !== 'online') return 1;
+      return 0;
+    });
+  }, [friendsBase, onlineUsers]);
   
   useEffect(() => {
     if (loading) return;
@@ -45,7 +54,8 @@ export default function FriendsPage() {
     }
     
     loadData();
-  }, [user, loading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, loading]);
   
   const loadData = async () => {
     if (!user) return;
@@ -55,14 +65,11 @@ export default function FriendsPage() {
       // S'assurer que le profil existe
       await ensureUserProfile(user);
       
-      // Charger les amis et les demandes
-      const [friendsList, requests] = await Promise.all([
-        getFriendsWithStatus(user.uid),
-        getPendingRequests(user.uid),
-      ]);
+      // Charger amis + demandes en une seule requête
+      const data = await getFriendsAndPending(user.uid);
       
-      setFriends(friendsList);
-      setPendingRequests(requests);
+      setFriendsBase(data.friends);
+      setPendingRequests(data.pending);
     } catch (error) {
       console.error('Erreur chargement données amis:', error);
     } finally {

@@ -11,7 +11,6 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { getPresence } from './presence-service';
 import type { User } from 'firebase/auth';
 
 // Types
@@ -260,67 +259,79 @@ export async function removeFriend(userId: string, friendId: string): Promise<vo
 // ========== RÉCUPÉRATION DES DONNÉES ==========
 
 /**
- * Récupère la liste des amis avec leur statut de présence
+ * Récupère les amis et demandes en attente en une seule requête API
  */
-export async function getFriendsWithStatus(userId: string): Promise<FriendInfo[]> {
-  const profile = await getUserProfile(userId);
-  
-  if (!profile?.friends?.length) {
-    return [];
+export async function getFriendsAndPending(userId: string): Promise<{
+  friends: Omit<FriendInfo, 'status' | 'lastSeen'>[];
+  pending: {
+    incoming: { odId: string; displayName: string; photoURL?: string }[];
+    outgoing: { odId: string; displayName: string; photoURL?: string }[];
+  };
+}> {
+  try {
+    const token = await getAuthToken();
+    
+    const response = await fetch('/api/friends/list', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Erreur chargement amis');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Erreur getFriendsAndPending:', error);
+    return { friends: [], pending: { incoming: [], outgoing: [] } };
   }
-  
-  // Récupérer tous les profils et présences EN PARALLÈLE
-  const friendsData = await Promise.all(
-    profile.friends.map(async (friendId) => {
-      const [friendProfile, presence] = await Promise.all([
-        getUserProfile(friendId),
-        getPresence(friendId),
-      ]);
-      return { friendProfile, presence };
-    })
-  );
-  
-  const friends: FriendInfo[] = friendsData
-    .filter(({ friendProfile }) => friendProfile !== null)
-    .map(({ friendProfile, presence }) => ({
-      odId: friendProfile!.odId,
-      displayName: friendProfile!.displayName,
-      photoURL: friendProfile!.photoURL,
-      status: presence?.status || 'offline',
-      lastSeen: presence?.lastSeen,
-    }));
-  
-  // Trier: en ligne > en jeu > hors ligne
-  return friends.sort((a, b) => {
-    const statusOrder = { 'online': 0, 'in-game': 1, 'offline': 2 };
-    return statusOrder[a.status] - statusOrder[b.status];
-  });
 }
 
 /**
- * Récupère les demandes d'amis en attente (reçues et envoyées)
+ * @deprecated Utiliser getFriendsAndPending
+ */
+export async function getFriends(userId: string): Promise<Omit<FriendInfo, 'status' | 'lastSeen'>[]> {
+  const data = await getFriendsAndPending(userId);
+  return data.friends;
+}
+
+/**
+ * @deprecated Utiliser getFriendsAndPending
+ */
+export async function getFriendsWithStatus(userId: string): Promise<FriendInfo[]> {
+  const friends = await getFriends(userId);
+  return friends.map(friend => ({
+    ...friend,
+    status: 'offline' as const,
+    lastSeen: undefined,
+  }));
+}
+
+/**
+ * @deprecated Utiliser getFriendsAndPending
  */
 export async function getPendingRequests(userId: string): Promise<{
   incoming: UserProfile[];
   outgoing: UserProfile[];
 }> {
-  const profile = await getUserProfile(userId);
-  
-  if (!profile) {
-    return { incoming: [], outgoing: [] };
-  }
-  
-  const incomingIds = profile.friendRequests?.incoming || [];
-  const outgoingIds = profile.friendRequests?.outgoing || [];
-  
-  // Récupérer tous les profils EN PARALLÈLE
-  const [incomingProfiles, outgoingProfiles] = await Promise.all([
-    Promise.all(incomingIds.map(id => getUserProfile(id))),
-    Promise.all(outgoingIds.map(id => getUserProfile(id))),
-  ]);
-  
-  const incoming = incomingProfiles.filter((u): u is UserProfile => u !== null && !!u.odId);
-  const outgoing = outgoingProfiles.filter((u): u is UserProfile => u !== null && !!u.odId);
-  
-  return { incoming, outgoing };
+  const data = await getFriendsAndPending(userId);
+  // Convertir en UserProfile (ajouter les champs manquants)
+  return {
+    incoming: data.pending.incoming.map(p => ({
+      ...p,
+      email: '',
+      createdAt: Timestamp.now(),
+      friends: [],
+      friendRequests: { incoming: [], outgoing: [] },
+    })),
+    outgoing: data.pending.outgoing.map(p => ({
+      ...p,
+      email: '',
+      createdAt: Timestamp.now(),
+      friends: [],
+      friendRequests: { incoming: [], outgoing: [] },
+    })),
+  };
 }
