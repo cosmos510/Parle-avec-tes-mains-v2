@@ -1,5 +1,31 @@
 import { Server, Socket } from 'socket.io';
-import { getFirestore } from '../firebase';
+import { getFirestore, getAuth } from '../firebase';
+
+// Cache pour les utilisateurs authentifiés (évite de re-vérifier à chaque événement)
+const authenticatedSockets = new Map<string, string>(); // socketId -> odId
+
+/**
+ * Vérifie le token Firebase et retourne l'UID de l'utilisateur
+ * @throws Error si le token est invalide
+ */
+async function verifyToken(token: string): Promise<string> {
+  const auth = getAuth();
+  const decodedToken = await auth.verifyIdToken(token);
+  return decodedToken.uid;
+}
+
+/**
+ * Middleware d'authentification pour les événements Socket.io
+ * Vérifie que le socket est authentifié et que l'odId correspond
+ */
+function requireAuth(socket: Socket, odId: string): boolean {
+  const authenticatedOdId = authenticatedSockets.get(socket.id);
+  if (!authenticatedOdId || authenticatedOdId !== odId) {
+    console.warn(`[Auth] Unauthorized socket ${socket.id} tried to act as ${odId}`);
+    return false;
+  }
+  return true;
+}
 
 export function setupPresenceHandlers(
   io: Server,
@@ -7,12 +33,35 @@ export function setupPresenceHandlers(
   onlineUsers: Map<string, Set<string>>,
   socketToUser: Map<string, string>
 ) {
-  // User comes online
+  // User comes online - REQUIRES TOKEN VERIFICATION
   socket.on('presence:online', async (data: { odId: string; token?: string }) => {
-    const { odId } = data;
+    const { odId, token } = data;
     
-    // TODO: Verify token with Firebase Auth if needed
-    // For now, trust the client
+    // Vérifier le token Firebase
+    if (!token) {
+      socket.emit('auth:error', { message: 'Token manquant' });
+      console.warn(`[Auth] No token provided by socket ${socket.id}`);
+      return;
+    }
+    
+    try {
+      const verifiedUid = await verifyToken(token);
+      
+      // Vérifier que l'odId correspond au token
+      if (verifiedUid !== odId) {
+        socket.emit('auth:error', { message: 'Token invalide pour cet utilisateur' });
+        console.warn(`[Auth] Token mismatch: claimed ${odId}, actual ${verifiedUid}`);
+        return;
+      }
+      
+      // Marquer le socket comme authentifié
+      authenticatedSockets.set(socket.id, odId);
+      
+    } catch (error) {
+      socket.emit('auth:error', { message: 'Token invalide ou expiré' });
+      console.warn(`[Auth] Invalid token for socket ${socket.id}:`, error);
+      return;
+    }
     
     // Track this socket for this user
     if (!onlineUsers.has(odId)) {
@@ -48,6 +97,15 @@ export function setupPresenceHandlers(
   socket.on('presence:offline', async (data: { odId: string }) => {
     const { odId } = data;
     
+    // Vérifier l'authentification
+    if (!requireAuth(socket, odId)) {
+      socket.emit('auth:error', { message: 'Non autorisé' });
+      return;
+    }
+    
+    // Nettoyer le cache d'authentification
+    authenticatedSockets.delete(socket.id);
+    
     const userSockets = onlineUsers.get(odId);
     if (userSockets) {
       userSockets.delete(socket.id);
@@ -74,10 +132,20 @@ export function setupPresenceHandlers(
 
   // Get online status of specific users (for friends list)
   socket.on('presence:check', (data: { odIds: string[] }, callback) => {
+    // Cette route est publique car elle ne modifie rien
+    // et l'info de présence est semi-publique
     const statuses: Record<string, boolean> = {};
     for (const odId of data.odIds) {
       statuses[odId] = onlineUsers.has(odId);
     }
     callback({ statuses });
   });
+  
+  // Cleanup on disconnect
+  socket.on('disconnect', () => {
+    authenticatedSockets.delete(socket.id);
+  });
 }
+
+// Export pour les autres handlers
+export { authenticatedSockets, requireAuth };

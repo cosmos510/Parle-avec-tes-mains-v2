@@ -1,5 +1,18 @@
 import { Server, Socket } from 'socket.io';
 import { getFirestore } from '../firebase';
+import { authenticatedSockets } from './presence';
+
+/**
+ * Vérifie que le socket est authentifié pour l'utilisateur donné
+ */
+function requireAuth(socket: Socket, odId: string): boolean {
+  const authenticatedOdId = authenticatedSockets.get(socket.id);
+  if (!authenticatedOdId || authenticatedOdId !== odId) {
+    console.warn(`[Duel Auth] Unauthorized socket ${socket.id} tried to act as ${odId}`);
+    return false;
+  }
+  return true;
+}
 
 interface DuelRoomState {
   id: string;
@@ -38,6 +51,12 @@ export function setupDuelHandlers(
 ) {
   // Create a duel room
   socket.on('duel:create', (data: { odId: string; displayName: string }, callback) => {
+    // Vérifier l'authentification
+    if (!requireAuth(socket, data.odId)) {
+      callback({ success: false, error: 'Non autorisé' });
+      return;
+    }
+    
     const roomId = generateRoomCode();
     const word = getRandomWord();
     
@@ -69,6 +88,12 @@ export function setupDuelHandlers(
 
   // Join a duel room
   socket.on('duel:join', (data: { roomId: string; odId: string; displayName: string }, callback) => {
+    // Vérifier l'authentification
+    if (!requireAuth(socket, data.odId)) {
+      callback({ success: false, error: 'Non autorisé' });
+      return;
+    }
+    
     const room = duelRooms.get(data.roomId);
     
     if (!room) {
@@ -111,6 +136,11 @@ export function setupDuelHandlers(
 
   // Player ready toggle
   socket.on('duel:ready', (data: { roomId: string; odId: string; ready: boolean }) => {
+    // Vérifier l'authentification
+    if (!requireAuth(socket, data.odId)) {
+      return;
+    }
+    
     const room = duelRooms.get(data.roomId);
     if (!room) return;
     
@@ -135,6 +165,11 @@ export function setupDuelHandlers(
 
   // Start countdown (host only)
   socket.on('duel:start', (data: { roomId: string; odId: string }) => {
+    // Vérifier l'authentification
+    if (!requireAuth(socket, data.odId)) {
+      return;
+    }
+    
     const room = duelRooms.get(data.roomId);
     if (!room || room.hostId !== data.odId) return;
     
@@ -168,6 +203,11 @@ export function setupDuelHandlers(
 
   // Player scores (signed the word)
   socket.on('duel:score', async (data: { roomId: string; odId: string; time: number }) => {
+    // Vérifier l'authentification
+    if (!requireAuth(socket, data.odId)) {
+      return;
+    }
+    
     const room = duelRooms.get(data.roomId);
     if (!room || room.status !== 'playing') return;
     
@@ -230,6 +270,11 @@ export function setupDuelHandlers(
 
   // Leave room
   socket.on('duel:leave', (data: { roomId: string; odId: string }) => {
+    // Vérifier l'authentification
+    if (!requireAuth(socket, data.odId)) {
+      return;
+    }
+    
     const room = duelRooms.get(data.roomId);
     if (!room) return;
     

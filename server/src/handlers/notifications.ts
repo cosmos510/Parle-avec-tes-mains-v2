@@ -1,5 +1,18 @@
 import { Server, Socket } from 'socket.io';
 import { getFirestore } from '../firebase';
+import { authenticatedSockets } from './presence';
+
+/**
+ * Vérifie que le socket est authentifié pour l'utilisateur donné
+ */
+function requireAuth(socket: Socket, odId: string): boolean {
+  const authenticatedOdId = authenticatedSockets.get(socket.id);
+  if (!authenticatedOdId || authenticatedOdId !== odId) {
+    console.warn(`[Notification Auth] Unauthorized socket ${socket.id} tried to act as ${odId}`);
+    return false;
+  }
+  return true;
+}
 
 export function setupNotificationHandlers(
   io: Server,
@@ -15,6 +28,12 @@ export function setupNotificationHandlers(
     roomId: string;
   }) => {
     const { fromId, fromName, toId, roomId } = data;
+    
+    // Vérifier que l'expéditeur est bien authentifié comme fromId
+    if (!requireAuth(socket, fromId)) {
+      console.warn(`[Notification] Unauthorized duel invite attempt from socket ${socket.id}`);
+      return;
+    }
     
     // Send to target user's room (all their connected devices)
     io.to(`user:${toId}`).emit('notification:duel_invite', {
@@ -53,6 +72,12 @@ export function setupNotificationHandlers(
   }) => {
     const { fromId, fromName, toId } = data;
     
+    // Vérifier l'authentification
+    if (!requireAuth(socket, fromId)) {
+      console.warn(`[Notification] Unauthorized friend request from socket ${socket.id}`);
+      return;
+    }
+    
     io.to(`user:${toId}`).emit('notification:friend_request', {
       fromId,
       fromName,
@@ -70,6 +95,12 @@ export function setupNotificationHandlers(
   }) => {
     const { fromId, fromName, toId } = data;
     
+    // Vérifier l'authentification
+    if (!requireAuth(socket, fromId)) {
+      console.warn(`[Notification] Unauthorized friend accepted from socket ${socket.id}`);
+      return;
+    }
+    
     io.to(`user:${toId}`).emit('notification:friend_accepted', {
       fromId,
       fromName,
@@ -84,6 +115,12 @@ export function setupNotificationHandlers(
     odId: string;
     notificationId: string;
   }) => {
+    // Vérifier que l'utilisateur marque ses propres notifications
+    if (!requireAuth(socket, data.odId)) {
+      console.warn(`[Notification] Unauthorized mark_read from socket ${socket.id}`);
+      return;
+    }
+    
     try {
       const db = getFirestore();
       await db
@@ -99,6 +136,12 @@ export function setupNotificationHandlers(
 
   // Get unread notifications count
   socket.on('notification:get_unread', async (data: { odId: string }, callback) => {
+    // Vérifier que l'utilisateur récupère ses propres notifications
+    if (!requireAuth(socket, data.odId)) {
+      callback({ count: 0, error: 'Non autorisé' });
+      return;
+    }
+    
     try {
       const db = getFirestore();
       const snapshot = await db
