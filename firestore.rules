@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users - lecture pour tous les authentifiés, écriture pour le propriétaire
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isOwner(userId);
+    }
+    
+    // User Progress
+    match /userProgress/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+    
+    // Sprint Records - lecture publique pour leaderboard
+    match /sprintRecords/{odId} {
+      allow read: if true;
+      allow write: if isOwner(odId);
+    }
+    
+    // Challenges
+    match /challenges/{challengeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.creatorId == request.auth.uid;
+    }
+    
+    // Challenge Rooms
+    match /challengeRooms/{roomId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    // Feedback
+    match /feedback/{feedbackId} {
+      allow create: if isAuthenticated();
+    }
+  }
+}
