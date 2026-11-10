@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,7 +37,7 @@ export function Navbar() {
           Parle avec tes mains
         </Link>
 
-        <div className="flex items-center gap-6" role="group" aria-label="Liens de navigation">
+        <div className="flex items-center gap-4 sm:gap-6" role="group" aria-label="Liens de navigation">
           <a
             href="https://github.com/cosmos510/parle-avec-tes-mains-v2"
             target="_blank"
@@ -45,6 +47,26 @@ export function Navbar() {
           >
             GitHub
           </a>
+          
+          {!loading && (
+            user ? (
+              <Link 
+                href="/profile"
+                className="text-sm font-medium px-4 py-2 rounded-full border-2 border-neutral-200 dark:border-neutral-800 hover:border-orange-500 dark:hover:border-orange-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                aria-label="Mon profil"
+              >
+                {user.displayName?.split(' ')[0] || 'Profil'}
+              </Link>
+            ) : (
+              <Link 
+                href="/login"
+                className="text-sm font-medium px-4 py-2 rounded-full border-2 border-neutral-200 dark:border-neutral-800 hover:border-orange-500 dark:hover:border-orange-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                aria-label="Se connecter"
+              >
+                Connexion
+              </Link>
+            )
+          )}
           
           <Link 
             href="/practice"
