@@ -8,9 +8,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
-  updateProfile
+  updateProfile as firebaseUpdateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider } from '@/lib/firebase';
 
 interface UserProfile {
@@ -37,6 +37,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateProfile: (data: { displayName?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -117,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Sign up with email/password
   const signUp = async (email: string, password: string, displayName: string) => {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(user, { displayName });
+    await firebaseUpdateProfile(user, { displayName });
   };
 
   // Sign in with Google
@@ -131,6 +132,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
+  // Update user profile
+  const updateUserProfile = async (data: { displayName?: string }) => {
+    if (!user) throw new Error('No user logged in');
+    
+    // Update Firebase Auth profile
+    if (data.displayName) {
+      await firebaseUpdateProfile(user, { displayName: data.displayName });
+    }
+    
+    // Update Firestore profile
+    const profileRef = doc(db, 'users', user.uid);
+    await updateDoc(profileRef, {
+      ...data,
+      updatedAt: serverTimestamp(),
+    });
+    
+    // Refresh local profile state
+    await refreshProfile();
+  };
+
   const value = {
     user,
     profile,
@@ -140,6 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     signOut,
     refreshProfile,
+    updateProfile: updateUserProfile,
   };
 
   return (

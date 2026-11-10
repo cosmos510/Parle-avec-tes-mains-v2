@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDuelInvites } from "@/hooks/useDuelInvites";
+import { Users } from "lucide-react";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, loading } = useAuth();
+  const { hasInvites } = useDuelInvites();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,6 +50,19 @@ export function Navbar() {
           >
             GitHub
           </a>
+          
+          {!loading && user && (
+            <Link 
+              href="/friends"
+              className="relative text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded p-2"
+              aria-label="Amis"
+            >
+              <Users className="w-5 h-5" />
+              {hasInvites && (
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              )}
+            </Link>
+          )}
           
           {!loading && (
             user ? (

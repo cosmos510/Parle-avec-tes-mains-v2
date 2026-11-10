@@ -259,11 +259,14 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
     } catch (err) {
       console.error('startCamera error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Erreur caméra';
+      const errorName = err instanceof Error ? err.name : '';
       
       if (errorMessage.includes('NotAllowed') || errorMessage.includes('Permission')) {
         setError('Accès à la caméra refusé. Veuillez autoriser l\'accès.');
       } else if (errorMessage.includes('NotFound')) {
         setError('Aucune caméra détectée.');
+      } else if (errorName === 'OverconstrainedError' || errorMessage.includes('Overconstrained')) {
+        setError('Caméra déjà utilisée par un autre onglet ou application.');
       } else {
         setError(`Erreur: ${errorMessage}`);
       }

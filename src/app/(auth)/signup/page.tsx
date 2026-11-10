@@ -10,6 +10,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptRGPD, setAcceptRGPD] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   
@@ -19,6 +20,12 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validation RGPD
+    if (!acceptRGPD) {
+      setError("Tu dois accepter la politique de confidentialité");
+      return;
+    }
 
     // Validation
     if (password !== confirmPassword) {
@@ -59,6 +66,13 @@ export default function SignUpPage() {
 
   const handleGoogleSignIn = async () => {
     setError("");
+    
+    // Validation RGPD
+    if (!acceptRGPD) {
+      setError("Tu dois accepter la politique de confidentialité");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -85,6 +99,24 @@ export default function SignUpPage() {
             Parle avec tes mains
           </Link>
           <p className="text-neutral-500 mt-2">Crée ton compte pour sauvegarder ta progression</p>
+        </div>
+
+        {/* RGPD Consent - En haut pour les deux méthodes */}
+        <div className="flex items-start gap-3 mb-6 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800">
+          <input
+            id="rgpd"
+            type="checkbox"
+            checked={acceptRGPD}
+            onChange={(e) => setAcceptRGPD(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-orange-500 focus:ring-orange-500"
+          />
+          <label htmlFor="rgpd" className="text-sm text-neutral-600 dark:text-neutral-400">
+            J&apos;accepte la{" "}
+            <Link href="/rgpd" className="text-orange-500 hover:underline" target="_blank">
+              politique de confidentialité
+            </Link>{" "}
+            et le traitement de mes données personnelles.
+          </label>
         </div>
 
         {/* Google Sign In */}
