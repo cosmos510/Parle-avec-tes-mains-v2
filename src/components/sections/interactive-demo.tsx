@@ -130,14 +130,22 @@ export function InteractiveDemo() {
       handsRef.current = hands as MediaPipeHands;
 
       // Démarrer la caméra
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 480 },
-          height: { ideal: 360 },
-          frameRate: { ideal: 30 },
-          facingMode: "user",
-        },
-      });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 480 },
+            height: { ideal: 360 },
+            frameRate: { ideal: 30 },
+            facingMode: "user",
+          },
+        });
+      } catch {
+        // Fallback si les contraintes ne sont pas supportées
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+      }
 
       streamRef.current = stream;
 
