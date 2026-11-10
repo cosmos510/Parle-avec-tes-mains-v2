@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  
+  // Fix pour firebase-admin ESM/CommonJS sur Vercel
+  serverExternalPackages: ['firebase-admin'],
+  
   turbopack: {
     rules: {
       "*.css": {
