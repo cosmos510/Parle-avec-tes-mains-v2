@@ -20,7 +20,7 @@ export function SprintLeaderboard({ entries }: SprintLeaderboardProps) {
 
   return (
     <div className="mt-12">
-      <h2 className="text-xl font-bold mb-4">🏆 Top 10</h2>
+      <h2 className="text-xl font-bold mb-4">Top 10</h2>
       <div className="space-y-2">
         {entries.map((entry, i) => (
           <div
@@ -40,9 +40,9 @@ export function SprintLeaderboard({ entries }: SprintLeaderboardProps) {
 }
 
 function getRankIcon(index: number): string {
-  if (index === 0) return "🥇";
-  if (index === 1) return "🥈";
-  if (index === 2) return "🥉";
+  if (index === 0) return "1.";
+  if (index === 1) return "2.";
+  if (index === 2) return "3.";
   return `${index + 1}.`;
 }
 

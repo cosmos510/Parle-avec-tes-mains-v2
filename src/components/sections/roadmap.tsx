@@ -107,7 +107,7 @@ export function RoadmapSection() {
                     className="inline-block px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-medium mb-3"
                     role="status"
                   >
-                    ⚡ Nouveau
+                    Nouveau
                   </span>
                   <h3 className="text-2xl sm:text-3xl font-bold">
                     Sprint Alphabet
@@ -122,7 +122,7 @@ export function RoadmapSection() {
                 et partage ton score avec tes amis !
               </p>
               <div className="flex items-center gap-4 text-sm text-neutral-500">
-                <span>🏆 Leaderboard</span>
+                <span>Classement</span>
                 <span>⏱️ Chrono</span>
                 <span>📤 Partage</span>
               </div>

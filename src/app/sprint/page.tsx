@@ -166,7 +166,7 @@ export default function SprintPage() {
                   <div>
                     {isNewRecord ? (
                       <div>
-                        <span className="text-6xl">🏆</span>
+                        <span className="text-6xl"></span>
                         <p className="text-2xl font-black text-orange-500 mt-2">
                           Nouveau record !
                         </p>
@@ -233,7 +233,7 @@ export default function SprintPage() {
                 {!isStreaming && !isLoading && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
                     <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4">
-                      <span className="text-4xl">⚡</span>
+                      <span className="text-4xl"></span>
                     </div>
                     <p className="text-neutral-500 mb-4 text-center">
                       Signe les 26 lettres le plus vite possible
@@ -307,7 +307,7 @@ export default function SprintPage() {
                     onClick={startGame}
                     className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-lg hover:bg-orange-600 transition-colors"
                   >
-                    Commencer 🚀
+                    Commencer
                   </button>
                 )}
 
@@ -403,7 +403,7 @@ export default function SprintPage() {
                 {leaderboard.length > 0 && (gameState === "idle" || gameState === "finished") && (
                   <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
                     <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">
-                      🏆 Top 5
+                       Top 5
                     </p>
                     <div className="space-y-2">
                       {leaderboard.slice(0, 5).map((entry, i) => (
@@ -421,7 +421,7 @@ export default function SprintPage() {
                         >
                           <div className="flex items-center gap-2">
                             <span className="font-bold w-5 text-sm">
-                              {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`}
+                              {i === 0 ? "1." : i === 1 ? "2." : i === 2 ? "3." : `${i + 1}.`}
                             </span>
                             <span className="text-sm truncate max-w-[80px]">
                               {entry.displayName}

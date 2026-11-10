@@ -211,17 +211,17 @@ function ChallengeContent() {
                   <div className="mt-4">
                     {matchResult === "win" && (
                       <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-sm font-bold">
-                        🎉 Tu as gagné !
+                        Tu as gagné !
                       </span>
                     )}
                     {matchResult === "lose" && (
                       <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-bold">
-                        😅 Presque ! Réessaie
+                        Presque ! Réessaie
                       </span>
                     )}
                     {matchResult === "tie" && (
                       <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-sm font-bold">
-                        🤝 Égalité parfaite !
+                        Égalité parfaite !
                       </span>
                     )}
                     {!matchResult && (
@@ -298,7 +298,7 @@ function ChallengeContent() {
                 {!isStreaming && !isLoading && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
                     <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4">
-                      <span className="text-4xl">🎯</span>
+                      <span className="text-4xl font-black text-neutral-300 dark:text-neutral-700">?</span>
                     </div>
                     <p className="text-neutral-500 mb-4 text-center">
                       {opponentResult 
@@ -386,7 +386,7 @@ function ChallengeContent() {
                     onClick={startGame}
                     className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-lg hover:bg-orange-600 transition-colors"
                   >
-                    {opponentResult ? "Relever le défi 🎯" : "Commencer 🚀"}
+                    {opponentResult ? "Relever le défi" : "Commencer"}
                   </button>
                 )}
 

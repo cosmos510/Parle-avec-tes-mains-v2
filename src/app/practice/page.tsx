@@ -83,7 +83,7 @@ export default function PracticePage() {
         const result = await recordLetterValidation(user.uid, letter);
         let message = `+${result.xpGained} XP`;
         if (result.letterMastered) message = `${letter} maîtrisée ! +${result.xpGained} XP`;
-        if (result.newLevel) message += " 🎉 Niveau supérieur !";
+        if (result.newLevel) message += " Niveau supérieur !";
         showXpGain(result.xpGained, message);
       }
       refreshProfile();
@@ -268,7 +268,7 @@ export default function PracticePage() {
                     onClick={pickRandomLetter}
                     className="mt-4 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                   >
-                    🎲 Autre lettre
+                    Autre lettre
                   </button>
                 )}
 
@@ -311,7 +311,7 @@ export default function PracticePage() {
                       onClick={startCamera}
                       className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold hover:scale-105 transition-transform"
                     >
-                      Activer 📷
+                      Activer la caméra
                     </button>
                   </div>
                 )}
@@ -354,7 +354,7 @@ export default function PracticePage() {
                     {/* Instruction si pas de main */}
                     {!displayedLetter && (
                       <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-black/50 text-white text-sm rounded-lg text-center">
-                        👋 Montre ta main devant la caméra
+                        Montre ta main devant la caméra
                       </div>
                     )}
                   </>

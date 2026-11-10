@@ -85,7 +85,7 @@ export default function ProfilePage() {
           </div>
           <div className="p-4 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 text-center">
             <p className="text-3xl font-black">{profile.currentStreak}</p>
-            <p className="text-sm text-neutral-500">Série 🔥</p>
+            <p className="text-sm text-neutral-500">Série</p>
           </div>
           <div className="p-4 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 text-center">
             <p className="text-3xl font-black">{profile.lettersMastered.length}</p>

@@ -57,7 +57,7 @@ export function WebcamView({
             onClick={onStartCamera}
             className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold hover:scale-105 transition-transform"
           >
-            Activer 📷
+            Activer la caméra
           </button>
         </div>
       )}

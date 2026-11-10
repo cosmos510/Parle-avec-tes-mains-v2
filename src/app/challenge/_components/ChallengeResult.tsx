@@ -23,7 +23,6 @@ export function ChallengeResult({ finalTime, opponentResult }: ChallengeResultPr
           animate={{ scale: 1 }}
           className="mb-4"
         >
-          <span className="text-4xl">{comparison.emoji}</span>
           <p className={`text-lg font-semibold ${comparison.colorClass}`}>
             {comparison.text}
           </p>
@@ -47,19 +46,16 @@ function getComparison(finalTime: number, opponentResult: ChallengeResultType | 
 
   if (diff < 0) {
     return {
-      emoji: "🎉",
       text: `Tu as battu ${opponentResult.odDisplayName} de ${formatTime(Math.abs(diff))} !`,
       colorClass: "text-green-500",
     };
   } else if (diff > 0) {
     return {
-      emoji: "😅",
       text: `${opponentResult.odDisplayName} t'a battu de ${formatTime(diff)}`,
       colorClass: "text-orange-500",
     };
   } else {
     return {
-      emoji: "🤝",
       text: "Égalité parfaite !",
       colorClass: "",
     };

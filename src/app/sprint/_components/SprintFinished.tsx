@@ -21,7 +21,7 @@ export function SprintFinished({ finalTime, bestTime, isNewRecord }: SprintFinis
           animate={{ scale: 1 }}
           className="text-lg text-orange-500 font-bold mb-2"
         >
-          🎉 Nouveau record !
+          Nouveau record !
         </motion.p>
       )}
       <p className="text-6xl font-black">{formatTime(finalTime)}</p>
