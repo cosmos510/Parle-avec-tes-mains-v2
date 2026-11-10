@@ -225,92 +225,197 @@ export default function PracticePage() {
             </button>
           </div>
 
-          {/* Layout 3 colonnes */}
+          {/* Layout mobile: lettres côte à côte puis caméra */}
+          {/* Layout desktop: 3 colonnes */}
           <div 
-            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 pt-6"
+            className="pt-6"
             role="tabpanel"
             id="practice-panel"
             aria-labelledby={mode === "free" ? "tab-free" : "tab-challenge"}
           >
             
-            {/* Colonne gauche - Lettre cible */}
-            <div className="lg:col-span-3 order-1">
-              <div className="lg:sticky lg:top-20">
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
-                  {mode === "free" ? "Signe cette lettre" : "Épelle le mot"}
-                </p>
-                
-                {mode === "free" && targetLetter && (
-                  <motion.div
-                    key={targetLetter}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="relative"
-                    role="status"
-                    aria-live="polite"
-                    aria-label={`Lettre cible : ${targetLetter}`}
-                  >
-                    {/* Lettre principale qui déborde */}
-                    <span className="text-[140px] sm:text-[180px] lg:text-[220px] font-black leading-none text-orange-500 block -ml-2 lg:-ml-4">
+            {/* Mobile: Lettres cible et détectée côte à côte */}
+            <div className="lg:hidden mb-4">
+              {mode === "free" && targetLetter && (
+                <div className="flex items-center justify-between px-2">
+                  {/* Lettre cible */}
+                  <div className="flex-1 text-center">
+                    <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Cible</p>
+                    <motion.span
+                      key={targetLetter}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-7xl font-black text-orange-500"
+                      role="status"
+                      aria-live="polite"
+                      aria-label={`Lettre cible : ${targetLetter}`}
+                    >
                       {targetLetter}
-                    </span>
-                    {/* Ligne décorative */}
-                    <div className="absolute -bottom-2 left-0 w-16 h-1 bg-orange-500/30 rounded-full" aria-hidden="true" />
-                  </motion.div>
-                )}
-
-                {mode === "challenge" && (
-                  <div className="space-y-2">
-                    <p className="text-sm text-neutral-500">
-                      {CHALLENGES[currentChallenge].hint}
-                    </p>
-                    <div className="flex gap-2 flex-wrap" role="list" aria-label="Progression du mot">
-                      {CHALLENGES[currentChallenge].word.split("").map((letter, i) => (
-                        <span
-                          key={i}
-                          className={`text-4xl sm:text-5xl font-black ${
-                            i < challengeProgress.length
-                              ? "text-green-500"
-                              : i === challengeProgress.length
+                    </motion.span>
+                  </div>
+                  
+                  {/* Flèche */}
+                  <div className="px-4 text-neutral-300 dark:text-neutral-700" aria-hidden="true">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                  
+                  {/* Lettre détectée */}
+                  <div className="flex-1 text-center">
+                    <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">Détectée</p>
+                    <AnimatePresence mode="wait">
+                      {displayedLetter ? (
+                        <motion.span
+                          key={displayedLetter}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          className={`text-7xl font-black ${
+                            isValidated && isCorrectLetter 
+                              ? "text-green-500" 
+                              : isCorrectLetter
                               ? "text-orange-500"
-                              : "text-neutral-300 dark:text-neutral-700"
+                              : "text-neutral-900 dark:text-white"
                           }`}
-                          role="listitem"
-                          aria-label={`Lettre ${letter}${i < challengeProgress.length ? ", complétée" : i === challengeProgress.length ? ", en cours" : ", à venir"}`}
+                          role="status"
+                          aria-live="polite"
                         >
-                          {letter}
-                        </span>
-                      ))}
-                    </div>
+                          {displayedLetter}
+                        </motion.span>
+                      ) : (
+                        <span className="text-7xl font-black text-neutral-200 dark:text-neutral-800">?</span>
+                      )}
+                    </AnimatePresence>
                   </div>
-                )}
+                </div>
+              )}
 
-                {mode === "free" && (
-                  <button
-                    onClick={pickRandomLetter}
-                    className="mt-4 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
-                    aria-label="Choisir une autre lettre aléatoire"
+              {mode === "challenge" && (
+                <div className="text-center">
+                  <p className="text-xs text-neutral-500 mb-2">{CHALLENGES[currentChallenge].hint}</p>
+                  <div className="flex gap-2 justify-center flex-wrap" role="list" aria-label="Progression du mot">
+                    {CHALLENGES[currentChallenge].word.split("").map((letter, i) => (
+                      <span
+                        key={i}
+                        className={`text-4xl font-black ${
+                          i < challengeProgress.length
+                            ? "text-green-500"
+                            : i === challengeProgress.length
+                            ? "text-orange-500"
+                            : "text-neutral-300 dark:text-neutral-700"
+                        }`}
+                        role="listitem"
+                      >
+                        {letter}
+                      </span>
+                    ))}
+                  </div>
+                  {displayedLetter && (
+                    <p className="mt-2 text-sm">
+                      Détectée : <span className={`font-bold ${isCorrectLetter ? "text-green-500" : "text-neutral-900 dark:text-white"}`}>{displayedLetter}</span>
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Barre de progression mobile */}
+              {displayedLetter && !isValidated && (
+                <div className="mt-3 px-4">
+                  <div 
+                    className="h-1.5 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={stableProgress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
                   >
-                    Autre lettre
-                  </button>
-                )}
-
-                {/* Stats mobile */}
-                <div className="flex gap-4 mt-6 lg:mt-8 lg:flex-col">
-                  <div>
-                    <p className="text-3xl font-black">{score}</p>
-                    <p className="text-xs text-neutral-500">Points</p>
+                    <div
+                      className="h-full bg-orange-500 transition-all"
+                      style={{ width: `${stableProgress}%` }}
+                    />
                   </div>
-                  <div>
-                    <p className="text-3xl font-black">{streak}</p>
-                    <p className="text-xs text-neutral-500">Série</p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            
+              {/* Colonne gauche - Desktop only */}
+              <div className="hidden lg:block lg:col-span-3">
+                <div className="lg:sticky lg:top-20">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                    {mode === "free" ? "Signe cette lettre" : "Épelle le mot"}
+                  </p>
+                  
+                  {mode === "free" && targetLetter && (
+                    <motion.div
+                      key={targetLetter}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="relative"
+                      role="status"
+                      aria-live="polite"
+                      aria-label={`Lettre cible : ${targetLetter}`}
+                    >
+                      <span className="text-[220px] font-black leading-none text-orange-500 block -ml-4">
+                        {targetLetter}
+                      </span>
+                      <div className="absolute -bottom-2 left-0 w-16 h-1 bg-orange-500/30 rounded-full" aria-hidden="true" />
+                    </motion.div>
+                  )}
+
+                  {mode === "challenge" && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-neutral-500">
+                        {CHALLENGES[currentChallenge].hint}
+                      </p>
+                      <div className="flex gap-2 flex-wrap" role="list" aria-label="Progression du mot">
+                        {CHALLENGES[currentChallenge].word.split("").map((letter, i) => (
+                          <span
+                            key={i}
+                            className={`text-5xl font-black ${
+                              i < challengeProgress.length
+                                ? "text-green-500"
+                                : i === challengeProgress.length
+                                ? "text-orange-500"
+                                : "text-neutral-300 dark:text-neutral-700"
+                            }`}
+                            role="listitem"
+                            aria-label={`Lettre ${letter}${i < challengeProgress.length ? ", complétée" : i === challengeProgress.length ? ", en cours" : ", à venir"}`}
+                          >
+                            {letter}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {mode === "free" && (
+                    <button
+                      onClick={pickRandomLetter}
+                      className="mt-4 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                      aria-label="Choisir une autre lettre aléatoire"
+                    >
+                      Autre lettre
+                    </button>
+                  )}
+
+                  {/* Stats desktop */}
+                  <div className="flex flex-col gap-4 mt-8">
+                    <div>
+                      <p className="text-3xl font-black">{score}</p>
+                      <p className="text-xs text-neutral-500">Points</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-black">{streak}</p>
+                      <p className="text-xs text-neutral-500">Série</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Colonne centrale - Webcam */}
-            <div className="lg:col-span-6 order-2">
+              {/* Colonne centrale - Webcam */}
+              <div className="lg:col-span-6">
               <div 
                 className="relative aspect-[4/3] bg-neutral-50 dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm"
                 role="region"
@@ -402,6 +507,15 @@ export default function PracticePage() {
                   >
                     Pause
                   </button>
+                  {mode === "free" && (
+                    <button
+                      onClick={pickRandomLetter}
+                      className="lg:hidden text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                      aria-label="Choisir une autre lettre"
+                    >
+                      Autre lettre
+                    </button>
+                  )}
                   <button
                     onClick={resetGame}
                     className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
@@ -419,10 +533,24 @@ export default function PracticePage() {
                   </Link>
                 </div>
               )}
+
+              {/* Stats mobile - sous la caméra */}
+              {isStreaming && (
+                <div className="flex justify-center gap-6 mt-4 lg:hidden">
+                  <div className="text-center">
+                    <p className="text-2xl font-black">{score}</p>
+                    <p className="text-xs text-neutral-500">Points</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-black">{streak}</p>
+                    <p className="text-xs text-neutral-500">Série</p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Colonne droite - Résultat */}
-            <div className="lg:col-span-3 order-3">
+            {/* Colonne droite - Desktop only */}
+            <div className="hidden lg:block lg:col-span-3">
               <div className="lg:sticky lg:top-20">
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
                   Lettre détectée
@@ -550,6 +678,7 @@ export default function PracticePage() {
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </main>
