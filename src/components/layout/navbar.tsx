@@ -8,10 +8,12 @@ import { Users } from "lucide-react";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { user, loading } = useAuth();
   const { hasInvites } = useDuelInvites();
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
@@ -51,7 +53,7 @@ export function Navbar() {
             GitHub
           </a>
           
-          {!loading && user && (
+          {mounted && !loading && user && (
             <Link 
               href="/friends"
               className="relative text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded p-2"
@@ -68,7 +70,16 @@ export function Navbar() {
             </Link>
           )}
           
-          {!loading && (
+          {/* Show login button immediately on SSR, then update on client */}
+          {(!mounted || loading) ? (
+            <Link 
+              href="/login"
+              className="text-sm font-medium px-4 py-2 rounded-full border-2 border-neutral-200 dark:border-neutral-800 hover:border-orange-500 dark:hover:border-orange-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+              aria-label="Se connecter"
+            >
+              Connexion
+            </Link>
+          ) : (
             user ? (
               <Link 
                 href="/profile"

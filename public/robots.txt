@@ -1,0 +1,12 @@
+# Robots.txt for parle-avec-tes-mains.fr
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://parle-avec-tes-mains.fr/sitemap.xml
+
+# Disallow private/API routes
+Disallow: /api/
+Disallow: /profile
+Disallow: /settings

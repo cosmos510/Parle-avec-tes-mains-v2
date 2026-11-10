@@ -1,10 +1,14 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { HeroSection } from "@/components/sections/hero";
-import { GameModesSection } from "@/components/sections/game-modes";
 import dynamic from "next/dynamic";
 
 // Lazy load les sections sous le fold pour améliorer le LCP
+const GameModesSection = dynamic(
+  () => import("@/components/sections/game-modes").then((mod) => mod.GameModesSection),
+  { loading: () => <div className="py-24 px-4 bg-neutral-50 dark:bg-neutral-900/50" aria-hidden="true" /> }
+);
+
 const InteractiveDemo = dynamic(
   () => import("@/components/sections/interactive-demo").then((mod) => mod.InteractiveDemo),
   { loading: () => <div className="py-24 px-4" aria-hidden="true" /> }
