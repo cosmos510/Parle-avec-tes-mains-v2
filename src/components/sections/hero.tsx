@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -8,8 +7,10 @@ const letters = ["A", "B", "C", "Y", "L", "V"];
 
 export function HeroSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % letters.length);
     }, 2000);
@@ -23,13 +24,8 @@ export function HeroSection() {
     >
       <div className="max-w-4xl mx-auto w-full">
         
-        {/* Main headline - typographie audacieuse */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="mb-8"
-        >
+        {/* Main headline */}
+        <div className={`mb-8 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
           <h1 
             id="hero-heading"
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95]"
@@ -38,39 +34,29 @@ export function HeroSection() {
             <br />
             <span className="inline-flex items-baseline">
               la lettre{" "}
-              <motion.span
+              <span
                 key={currentIndex}
-                initial={{ opacity: 0, y: 20, rotateX: -90 }}
-                animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-                className="inline-block ml-3 text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-orange-500"
+                className="inline-block ml-3 text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-orange-500 animate-fade-in"
                 aria-live="polite"
                 aria-atomic="true"
               >
                 {letters[currentIndex]}
-              </motion.span>
+              </span>
             </span>
           </h1>
-        </motion.div>
+        </div>
 
         {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-xl md:text-2xl text-neutral-600 dark:text-neutral-400 max-w-xl mb-10"
+        <p
+          className={`text-xl md:text-2xl text-neutral-600 dark:text-neutral-400 max-w-xl mb-10 transition-opacity duration-500 delay-100 ${mounted ? 'opacity-100' : 'opacity-0'}`}
         >
           Ta webcam + un peu de pratique = tu sais signer l&apos;alphabet LSF. 
           Gratuit, sans compte, 100% dans ton navigateur.
-        </motion.p>
+        </p>
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="flex flex-wrap items-center gap-4"
+        <div
+          className={`flex flex-wrap items-center gap-4 transition-opacity duration-500 delay-200 ${mounted ? 'opacity-100' : 'opacity-0'}`}
           role="group"
           aria-label="Actions principales"
         >
@@ -94,14 +80,11 @@ export function HeroSection() {
           <span className="text-sm text-neutral-500" aria-label="Temps estimé">
             ~15 min pour maîtriser les bases
           </span>
-        </motion.div>
+        </div>
 
         {/* Visual hint */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-20 flex items-center gap-6"
+        <div
+          className={`mt-20 flex items-center gap-6 transition-opacity duration-500 delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}
           aria-label="Aperçu des lettres disponibles"
           role="presentation"
         >
@@ -110,24 +93,21 @@ export function HeroSection() {
             role="list"
             aria-label="Premières lettres de l'alphabet"
           >
-            {["A", "B", "C", "D", "E"].map((l, i) => (
-              <motion.div
+            {["A", "B", "C", "D", "E"].map((l) => (
+              <div
                 key={l}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1 + i * 0.1 }}
                 className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 border-2 border-white dark:border-neutral-900 flex items-center justify-center font-bold text-lg"
                 role="listitem"
                 aria-label={`Lettre ${l}`}
               >
                 {l}
-              </motion.div>
+              </div>
             ))}
           </div>
           <p className="text-neutral-500 text-sm">
             26 lettres à débloquer
           </p>
-        </motion.div>
+        </div>
 
       </div>
     </section>

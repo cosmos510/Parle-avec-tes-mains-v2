@@ -1,21 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useRef } from "react";
 
 export function GameModesSection() {
+  const ref = useRef<HTMLDivElement>(null);
+
   return (
     <section 
       className="py-24 px-4 bg-neutral-50 dark:bg-neutral-900/50" 
       id="modes"
       aria-labelledby="modes-heading"
     >
-      <div className="max-w-4xl mx-auto text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
+      <div className="max-w-4xl mx-auto text-center" ref={ref}>
+        <div>
           <h2 
             id="modes-heading"
             className="text-3xl sm:text-4xl font-bold tracking-tight mb-4"
@@ -43,7 +41,7 @@ export function GameModesSection() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </Link>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
