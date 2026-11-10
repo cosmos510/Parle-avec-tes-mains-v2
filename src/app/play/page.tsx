@@ -19,10 +19,17 @@ const GAME_MODES = [
     tag: "Chrono",
   },
   {
+    href: "/duel",
+    title: "Duel en temps réel",
+    description: "Affronte un ami en direct. Le premier à signer le mot gagne.",
+    tag: "Nouveau",
+    highlight: true,
+  },
+  {
     href: "/challenge",
     title: "Défie un ami",
     description: "Envoie un défi et compare vos scores. Qui signe le plus vite ?",
-    tag: "Multijoueur",
+    tag: "Async",
   },
   {
     href: "/leaderboard",
@@ -68,7 +75,11 @@ export default function PlayHub() {
               >
                 <Link
                   href={mode.href}
-                  className="group block p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all hover:shadow-lg"
+                  className={`group block p-6 rounded-2xl border transition-all hover:shadow-lg ${
+                    mode.highlight 
+                      ? "border-orange-500 bg-orange-50 dark:bg-orange-900/10" 
+                      : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -76,7 +87,11 @@ export default function PlayHub() {
                         <h2 className="text-xl font-bold group-hover:text-orange-500 transition-colors">
                           {mode.title}
                         </h2>
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          mode.highlight 
+                            ? "bg-orange-500 text-white" 
+                            : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                        }`}>
                           {mode.tag}
                         </span>
                       </div>

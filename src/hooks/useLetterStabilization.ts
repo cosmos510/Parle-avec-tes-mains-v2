@@ -7,6 +7,8 @@ import type { StabilizationState } from "@/types/practice";
 interface UseLetterStabilizationProps {
   predictedLetter: string | null;
   isActive: boolean;
+  /** Durée de stabilisation personnalisée en ms (défaut: STABILIZATION.VALIDATION_DURATION_MS) */
+  stabilizationTime?: number;
 }
 
 interface UseLetterStabilizationReturn extends StabilizationState {
@@ -20,7 +22,9 @@ interface UseLetterStabilizationReturn extends StabilizationState {
 export function useLetterStabilization({
   predictedLetter,
   isActive,
+  stabilizationTime,
 }: UseLetterStabilizationProps): UseLetterStabilizationReturn {
+  const validationDuration = stabilizationTime ?? STABILIZATION.VALIDATION_DURATION_MS;
   const [displayedLetter, setDisplayedLetter] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [isValidated, setIsValidated] = useState(false);
@@ -83,7 +87,7 @@ export function useLetterStabilization({
           const elapsed = Date.now() - startTime;
           const newProgress = Math.min(
             100,
-            (elapsed / STABILIZATION.VALIDATION_DURATION_MS) * 100
+            (elapsed / validationDuration) * 100
           );
           setProgress(newProgress);
 
