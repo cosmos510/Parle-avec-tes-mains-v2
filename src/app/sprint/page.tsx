@@ -55,7 +55,6 @@ export default function SprintPage() {
   } = useLetterStabilization({
     predictedLetter,
     isActive: isStreaming && gameState === "playing",
-    requiredDuration: 300, // Faster validation for sprint
   });
 
   const currentLetter = ALPHABET[currentIndex];
@@ -78,7 +77,7 @@ export default function SprintPage() {
         const q = query(leaderboardRef, orderBy("bestTime", "asc"), limit(10));
         const snapshot = await getDocs(q);
         const entries: LeaderboardEntry[] = [];
-        snapshot.forEach((doc, index) => {
+        snapshot.docs.forEach((doc, index) => {
           const data = doc.data();
           entries.push({
             rank: index + 1,
