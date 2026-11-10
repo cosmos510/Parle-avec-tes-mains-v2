@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { User } from "firebase/auth";
 import type { DuelRoom } from "@/lib/duel-service";
 import { setPlayerReady, startDuelCountdown } from "@/lib/duel-service";
+import { getFriendsWithStatus, sendDuelInvite, type FriendInfo } from "@/lib/friends-service";
+import { Circle, Users, Loader2, Send } from "lucide-react";
 
 interface DuelLobbyProps {
   room: DuelRoom;
@@ -14,12 +16,48 @@ interface DuelLobbyProps {
 
 export function DuelLobby({ room, user, onLeave }: DuelLobbyProps) {
   const [copied, setCopied] = useState(false);
+  const [showFriends, setShowFriends] = useState(false);
+  const [friends, setFriends] = useState<FriendInfo[]>([]);
+  const [loadingFriends, setLoadingFriends] = useState(false);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
 
   const isHost = room.hostId === user.uid;
   const players = Object.values(room.players);
   const currentPlayer = room.players[user.uid];
   const opponent = players.find((p) => p.odId !== user.uid);
   const allReady = players.length === 2 && players.every((p) => p.isReady);
+
+  // Charger la liste d'amis quand on ouvre le panel
+  useEffect(() => {
+    if (showFriends && friends.length === 0) {
+      loadFriends();
+    }
+  }, [showFriends]);
+
+  const loadFriends = async () => {
+    setLoadingFriends(true);
+    try {
+      const friendsList = await getFriendsWithStatus(user.uid);
+      setFriends(friendsList);
+    } catch (error) {
+      console.error("Erreur chargement amis:", error);
+    } finally {
+      setLoadingFriends(false);
+    }
+  };
+
+  const handleInviteFriend = async (friend: FriendInfo) => {
+    setInvitingId(friend.odId);
+    try {
+      await sendDuelInvite(user, friend.odId, room.id);
+      setInvitedIds((prev) => new Set(prev).add(friend.odId));
+    } catch (error) {
+      console.error("Erreur invitation:", error);
+    } finally {
+      setInvitingId(null);
+    }
+  };
 
   const copyCode = () => {
     navigator.clipboard.writeText(room.id);
@@ -51,6 +89,8 @@ export function DuelLobby({ room, user, onLeave }: DuelLobbyProps) {
       startDuelCountdown(room.id);
     }
   };
+
+  const onlineFriends = friends.filter(f => f.status === 'online');
 
   return (
     <div className="max-w-md mx-auto">
@@ -113,7 +153,7 @@ export function DuelLobby({ room, user, onLeave }: DuelLobbyProps) {
               </div>
             </div>
             {currentPlayer?.isReady && (
-              <span className="text-sm font-medium text-green-500">Prêt</span>
+              <span className="text-sm font-medium text-green-500">Pret</span>
             )}
           </div>
         </div>
@@ -136,7 +176,7 @@ export function DuelLobby({ room, user, onLeave }: DuelLobbyProps) {
                 </div>
               </div>
               {opponent.isReady && (
-                <span className="text-sm font-medium text-green-500">Prêt</span>
+                <span className="text-sm font-medium text-green-500">Pret</span>
               )}
             </div>
           </div>
@@ -150,7 +190,7 @@ export function DuelLobby({ room, user, onLeave }: DuelLobbyProps) {
               </div>
               <div>
                 <p className="text-neutral-400">En attente d'un adversaire...</p>
-                <p className="text-xs text-neutral-500">Partage le code</p>
+                <p className="text-xs text-neutral-500">Partage le code ou invite un ami</p>
               </div>
             </div>
           </div>
@@ -164,14 +204,87 @@ export function DuelLobby({ room, user, onLeave }: DuelLobbyProps) {
         transition={{ delay: 0.2 }}
         className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 mb-8 text-center"
       >
-        <p className="text-xs text-neutral-500 mb-1">Mot à signer</p>
+        <p className="text-xs text-neutral-500 mb-1">Mot a signer</p>
         <p className="text-2xl font-black tracking-widest">
           {"•".repeat(room.word.length)}
         </p>
         <p className="text-xs text-neutral-400 mt-1">
-          {room.word.length} lettres - révélé au départ
+          {room.word.length} lettres - revele au depart
         </p>
       </motion.div>
+
+      {/* Liste d'amis en ligne */}
+      {!opponent && showFriends && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mb-6"
+        >
+          <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Amis en ligne
+              </h3>
+              <button
+                onClick={() => setShowFriends(false)}
+                className="text-xs text-neutral-500 hover:text-neutral-700"
+              >
+                Fermer
+              </button>
+            </div>
+            
+            {loadingFriends ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-neutral-400" />
+              </div>
+            ) : onlineFriends.length === 0 ? (
+              <p className="text-sm text-neutral-500 text-center py-4">
+                Aucun ami en ligne
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {onlineFriends.map((friend) => (
+                  <div
+                    key={friend.odId}
+                    className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-neutral-800"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-bold">
+                        {friend.displayName.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{friend.displayName}</p>
+                        <div className="flex items-center gap-1">
+                          <Circle className="w-2 h-2 fill-green-500 text-green-500" />
+                          <span className="text-xs text-green-500">En ligne</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {invitedIds.has(friend.odId) ? (
+                      <span className="text-xs text-green-500">Invite envoyee</span>
+                    ) : (
+                      <button
+                        onClick={() => handleInviteFriend(friend)}
+                        disabled={invitingId === friend.odId}
+                        className="p-2 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:opacity-80 disabled:opacity-50"
+                      >
+                        {invitingId === friend.odId ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
 
       {/* Actions */}
       <motion.div
@@ -189,7 +302,7 @@ export function DuelLobby({ room, user, onLeave }: DuelLobbyProps) {
               : "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:opacity-90"
           }`}
         >
-          {currentPlayer?.isReady ? "Prêt ✓" : "Je suis prêt"}
+          {currentPlayer?.isReady ? "Pret" : "Je suis pret"}
         </button>
 
         {/* Bouton Commencer (host seulement) */}
@@ -203,17 +316,26 @@ export function DuelLobby({ room, user, onLeave }: DuelLobbyProps) {
           </button>
         )}
 
-        {/* Partager */}
+        {/* Boutons d'invitation */}
         {!opponent && (
-          <button
-            onClick={shareLink}
-            className="w-full py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors font-medium flex items-center justify-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-            </svg>
-            Inviter un ami
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setShowFriends(!showFriends)}
+              className="py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-orange-500 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Amis
+            </button>
+            <button
+              onClick={shareLink}
+              className="py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              Partager
+            </button>
+          </div>
         )}
 
         {/* Quitter */}

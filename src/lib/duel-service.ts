@@ -6,11 +6,22 @@ import { ref, set, onValue, update, remove, get, onDisconnect } from 'firebase/d
 import { realtimeDb } from './firebase';
 import type { User } from 'firebase/auth';
 
+/**
+ * Vérifie si la Realtime Database est configurée
+ */
+function checkRealtimeDbConfigured(): void {
+  if (!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) {
+    throw new Error(
+      "Firebase Realtime Database non configurée. Ajoute NEXT_PUBLIC_FIREBASE_DATABASE_URL dans ton .env.local"
+    );
+  }
+}
+
 // Types
 export interface DuelPlayer {
   odId: string;
   displayName: string;
-  photoURL?: string;
+  photoURL: string | null;
   progress: number; // 0-26 lettres complétées
   currentLetter: string | null;
   finishTime: number | null;
@@ -51,6 +62,8 @@ function generateRoomCode(): string {
  * Crée une nouvelle room de duel
  */
 export async function createDuelRoom(user: User): Promise<string> {
+  checkRealtimeDbConfigured();
+  
   const roomId = generateRoomCode();
   const word = DUEL_WORDS[Math.floor(Math.random() * DUEL_WORDS.length)];
   
@@ -65,7 +78,7 @@ export async function createDuelRoom(user: User): Promise<string> {
       [user.uid]: {
         odId: user.uid,
         displayName: user.displayName || 'Joueur 1',
-        photoURL: user.photoURL || undefined,
+        photoURL: user.photoURL || null,
         progress: 0,
         currentLetter: null,
         finishTime: null,
@@ -90,6 +103,8 @@ export async function createDuelRoom(user: User): Promise<string> {
  * Rejoint une room existante
  */
 export async function joinDuelRoom(roomId: string, user: User): Promise<DuelRoom | null> {
+  checkRealtimeDbConfigured();
+  
   const roomRef = ref(realtimeDb, `duels/${roomId}`);
   const snapshot = await get(roomRef);
   
@@ -115,7 +130,7 @@ export async function joinDuelRoom(roomId: string, user: User): Promise<DuelRoom
   const player: DuelPlayer = {
     odId: user.uid,
     displayName: user.displayName || 'Joueur 2',
-    photoURL: user.photoURL || undefined,
+    photoURL: user.photoURL || null,
     progress: 0,
     currentLetter: null,
     finishTime: null,
