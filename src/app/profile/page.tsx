@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { getBadgeById, getRarityColor, Badge } from "@/lib/badges";
 
 export default function ProfilePage() {
   const { user, profile, loading, signOut } = useAuth();
@@ -35,6 +36,12 @@ export default function ProfilePage() {
   // Calculate level progress
   const xpForNextLevel = profile.currentLevel * 100;
   const xpProgress = (profile.totalXp % 100) / 100 * 100;
+
+  // Get user badges
+  const userBadges: (Badge | undefined)[] = (profile.badges || [])
+    .map((id: string) => getBadgeById(id))
+    .filter(Boolean)
+    .slice(0, 6);
 
   return (
     <main className="min-h-screen bg-white dark:bg-neutral-950 pt-20 pb-12 px-4">
@@ -117,6 +124,33 @@ export default function ProfilePage() {
           ) : (
             <p className="text-neutral-500 text-sm">
               Aucune lettre maîtrisée pour l&apos;instant. <Link href="/practice" className="text-orange-500 hover:underline">Commence à pratiquer !</Link>
+            </p>
+          )}
+        </div>
+
+        {/* Badges */}
+        <div className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold">Badges</h2>
+            <Link href="/badges" className="text-sm text-orange-500 hover:underline">
+              Voir tous →
+            </Link>
+          </div>
+          {userBadges.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {userBadges.map((badge) => badge && (
+                <div
+                  key={badge.id}
+                  className={`px-3 py-2 rounded-xl border ${getRarityColor(badge.rarity)} flex items-center gap-2`}
+                >
+                  <span className="text-xl">{badge.icon}</span>
+                  <span className="text-sm font-medium">{badge.name}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-neutral-500 text-sm">
+              Aucun badge pour l&apos;instant. <Link href="/practice" className="text-orange-500 hover:underline">Continue à pratiquer !</Link>
             </p>
           )}
         </div>
