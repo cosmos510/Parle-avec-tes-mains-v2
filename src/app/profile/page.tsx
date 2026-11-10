@@ -164,10 +164,10 @@ export default function ProfilePage() {
             Continuer à pratiquer
           </Link>
           <Link
-            href="/leaderboard"
+            href="/stats"
             className="flex-1 px-6 py-4 rounded-full border-2 border-neutral-200 dark:border-neutral-800 font-semibold text-center hover:border-orange-500 transition-colors"
           >
-            Voir le classement
+            Voir mes statistiques
           </Link>
         </div>
       </div>
