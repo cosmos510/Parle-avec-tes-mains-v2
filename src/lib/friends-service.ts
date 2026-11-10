@@ -105,16 +105,21 @@ export async function getUserProfile(odId: string): Promise<UserProfile | null> 
 /**
  * Recherche des utilisateurs via l'API sécurisée côté serveur
  */
-export async function searchUsers(searchTerm: string, currentUserId: string): Promise<UserProfile[]> {
+export async function searchUsers(searchTerm: string, _currentUserId?: string): Promise<UserProfile[]> {
   if (!searchTerm || searchTerm.length < 2) {
     return [];
   }
   
   try {
+    const token = await getAuthToken();
+    
     const response = await fetch('/api/users/search', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ searchTerm, currentUserId }),
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ searchTerm }),
     });
     
     if (!response.ok) {

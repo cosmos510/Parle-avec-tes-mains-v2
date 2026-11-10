@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
 
 interface SearchResult {
   odId: string;
@@ -11,19 +11,27 @@ interface SearchResult {
 /**
  * API Route pour rechercher des utilisateurs de manière sécurisée
  * POST /api/users/search
- * Body: { searchTerm: string, currentUserId: string }
+ * Body: { searchTerm: string }
+ * Header: Authorization: Bearer <token>
  */
 export async function POST(request: NextRequest) {
   try {
-    const { searchTerm, currentUserId } = await request.json();
+    // Vérifier l'authentification via token Firebase
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    }
+
+    const auth = getAdminAuth();
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await auth.verifyIdToken(token);
+    const currentUserId = decodedToken.uid;
+
+    const { searchTerm } = await request.json();
     
     // Validation
     if (!searchTerm || searchTerm.length < 2) {
       return NextResponse.json({ users: [] });
-    }
-    
-    if (!currentUserId) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
     
     const searchLower = searchTerm.toLowerCase();
