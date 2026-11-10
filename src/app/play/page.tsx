@@ -20,16 +20,10 @@ const GAME_MODES = [
   },
   {
     href: "/duel",
-    title: "Duel en temps réel",
-    description: "Affronte un ami en direct. Le premier à signer le mot gagne.",
-    tag: "Nouveau",
+    title: "Duel",
+    description: "Affronte un ami en direct ou envoie-lui un défi par code.",
+    tag: "Multijoueur",
     highlight: true,
-  },
-  {
-    href: "/challenge",
-    title: "Défie un ami",
-    description: "Envoie un défi et compare vos scores. Qui signe le plus vite ?",
-    tag: "Async",
   },
   {
     href: "/leaderboard",

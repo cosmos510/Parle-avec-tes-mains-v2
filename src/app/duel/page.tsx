@@ -15,6 +15,8 @@ import {
   leaveDuelRoom,
   type DuelRoom,
 } from "@/lib/duel-service";
+import { getFriendsWithStatus, sendDuelInvite, type FriendInfo } from "@/lib/friends-service";
+import { Users, Circle, Loader2, Send } from "lucide-react";
 
 export default function DuelPage() {
   return (
@@ -42,6 +44,11 @@ function DuelContent() {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [joinCode, setJoinCode] = useState(roomCode || "");
+  
+  // Friends state
+  const [friends, setFriends] = useState<FriendInfo[]>([]);
+  const [loadingFriends, setLoadingFriends] = useState(true);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
 
   // S'abonner aux changements de la room
   useEffect(() => {
@@ -59,6 +66,25 @@ function DuelContent() {
 
     return () => unsubscribe();
   }, [room?.id]);
+
+  // Charger la liste d'amis au démarrage
+  useEffect(() => {
+    if (!user) return;
+    
+    const loadFriends = async () => {
+      setLoadingFriends(true);
+      try {
+        const friendsList = await getFriendsWithStatus(user.uid);
+        setFriends(friendsList);
+      } catch (error) {
+        console.error("Erreur chargement amis:", error);
+      } finally {
+        setLoadingFriends(false);
+      }
+    };
+    
+    loadFriends();
+  }, [user]);
 
   // Auto-join si room code dans l'URL
   useEffect(() => {
@@ -123,6 +149,30 @@ function DuelContent() {
     setRoom(null);
   }, [room, user]);
 
+  // Inviter un ami directement (créer room + envoyer invitation)
+  const handleInviteFriend = async (friend: FriendInfo) => {
+    if (!user) return;
+    
+    setInvitingId(friend.odId);
+    setError(null);
+    
+    try {
+      // Créer une room
+      const roomId = await createDuelRoom(user);
+      const newRoom = await joinDuelRoom(roomId, user);
+      
+      // Envoyer l'invitation
+      await sendDuelInvite(user, friend.odId, roomId);
+      
+      setRoom(newRoom);
+    } catch (err) {
+      setError("Erreur lors de l'invitation");
+      console.error(err);
+    } finally {
+      setInvitingId(null);
+    }
+  };
+
   if (authLoading) return <LoadingSpinner />;
 
   // Écran de résultat
@@ -162,16 +212,18 @@ function DuelContent() {
   }
 
   // Écran d'accueil - créer ou rejoindre
+  const onlineFriends = friends.filter(f => f.status === 'online');
+  
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
-      <GameHeader title="Duel en temps réel" />
+      <GameHeader title="Duel" />
 
       <main className="pt-20 pb-8 px-4">
         <div className="max-w-md mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="text-center mb-8"
           >
             <h1 className="text-4xl font-black mb-4">Duel</h1>
             <p className="text-neutral-500">
@@ -179,34 +231,108 @@ function DuelContent() {
             </p>
           </motion.div>
 
-          {/* Créer une room */}
+          {/* Amis en ligne */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-8"
+            className="mb-6"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Users className="w-4 h-4 text-neutral-500" />
+              <p className="text-sm text-neutral-500">Amis en ligne</p>
+            </div>
+            
+            {loadingFriends ? (
+              <div className="p-6 rounded-xl bg-neutral-50 dark:bg-neutral-900 flex justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-neutral-400" />
+              </div>
+            ) : onlineFriends.length === 0 ? (
+              <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 text-center">
+                <p className="text-sm text-neutral-500">
+                  {friends.length === 0 
+                    ? "Ajoute des amis pour les défier en duel" 
+                    : "Aucun ami en ligne pour le moment"}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {onlineFriends.slice(0, 3).map((friend) => (
+                  <motion.div
+                    key={friend.odId}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center font-bold">
+                        {friend.displayName.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-medium">{friend.displayName}</p>
+                        <div className="flex items-center gap-1">
+                          <Circle className="w-2 h-2 fill-green-500 text-green-500" />
+                          <span className="text-xs text-green-500">En ligne</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => handleInviteFriend(friend)}
+                      disabled={invitingId === friend.odId}
+                      className="px-4 py-2 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-sm font-medium hover:opacity-80 transition-opacity disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {invitingId === friend.odId ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          Défier
+                        </>
+                      )}
+                    </button>
+                  </motion.div>
+                ))}
+                {onlineFriends.length > 3 && (
+                  <p className="text-xs text-center text-neutral-500">
+                    +{onlineFriends.length - 3} autres amis en ligne
+                  </p>
+                )}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Séparateur */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
+            <span className="text-sm text-neutral-500">ou</span>
+            <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
+          </div>
+
+          {/* Créer une room */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-6"
           >
             <button
               onClick={handleCreateRoom}
               disabled={isCreating}
               className="w-full py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {isCreating ? "Création..." : "Créer une partie"}
+              {isCreating ? "Création..." : "Créer une partie (code)"}
             </button>
+            <p className="text-xs text-neutral-500 text-center mt-2">
+              Crée une partie et partage le code avec un ami
+            </p>
           </motion.div>
-
-          {/* Séparateur */}
-          <div className="flex items-center gap-4 mb-8">
-            <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
-            <span className="text-sm text-neutral-500">ou</span>
-            <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
-          </div>
 
           {/* Rejoindre une room */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.3 }}
           >
             <p className="text-sm text-neutral-500 mb-3">Rejoindre avec un code</p>
             <div className="flex gap-3">
@@ -247,7 +373,7 @@ function DuelContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-800"
+            className="mt-10 pt-8 border-t border-neutral-200 dark:border-neutral-800"
           >
             <p className="text-xs text-neutral-500 uppercase tracking-wider mb-4">
               Comment ça marche
@@ -257,7 +383,7 @@ function DuelContent() {
                 <span className="w-5 h-5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-xs font-bold flex-shrink-0">
                   1
                 </span>
-                <span>Crée une partie et partage le code</span>
+                <span>Défie un ami en ligne ou partage un code</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="w-5 h-5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-xs font-bold flex-shrink-0">
