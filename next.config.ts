@@ -2,20 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
   
   // Fix pour firebase-admin ESM/CommonJS sur Vercel
   serverExternalPackages: ['firebase-admin', 'jose', 'jwks-rsa'],
-  
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
   
   // Headers de sécurité
   async headers() {
