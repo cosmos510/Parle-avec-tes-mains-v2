@@ -7,15 +7,8 @@ import { useLetterStabilization } from "@/hooks/useLetterStabilization";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { recordLetterValidation, recordChallengeComplete } from "@/lib/progression";
 import { ASL_ALPHABET, CHALLENGES, SCORING } from "@/lib/constants";
+import { GameHeader } from "@/components/game";
 import type { PracticeMode } from "@/types/practice";
-
-import { PracticeHeader } from "./_components/PracticeHeader";
-import { ModeSelector } from "./_components/ModeSelector";
-import { TargetDisplay } from "./_components/TargetDisplay";
-import { PracticeWebcam } from "./_components/PracticeWebcam";
-import { AlphabetGrid } from "./_components/AlphabetGrid";
-import { SessionStats } from "./_components/SessionStats";
-import { HelpPanel } from "./_components/HelpPanel";
 
 export default function PracticePage() {
   const { user, loading: authLoading, refreshProfile } = useRequireAuth();
@@ -40,13 +33,11 @@ export default function PracticePage() {
     isActive: isStreaming,
   });
 
-  // Sélectionner une lettre aléatoire
   const pickRandomLetter = useCallback(() => {
     const letter = ASL_ALPHABET[Math.floor(Math.random() * ASL_ALPHABET.length)];
     setTargetLetter(letter);
   }, []);
 
-  // Changer de mode
   const handleModeChange = useCallback((newMode: PracticeMode) => {
     setMode(newMode);
     if (newMode === "free") {
@@ -56,13 +47,11 @@ export default function PracticePage() {
     }
   }, [pickRandomLetter]);
 
-  // Célébration
   const triggerCelebration = useCallback(() => {
     setShowCelebration(true);
     setTimeout(() => setShowCelebration(false), 1500);
   }, []);
 
-  // Reset
   const resetGame = useCallback(() => {
     setScore(0);
     setStreak(0);
@@ -72,20 +61,17 @@ export default function PracticePage() {
     if (mode === "free") pickRandomLetter();
   }, [mode, pickRandomLetter]);
 
-  // Init
   useEffect(() => {
     if (mode === "free" && !targetLetter) {
       pickRandomLetter();
     }
   }, [mode, targetLetter, pickRandomLetter]);
 
-  // Notification XP
   const showXpGain = useCallback((xp: number, message: string) => {
     setXpNotification({ xp, message });
     setTimeout(() => setXpNotification(null), 2000);
   }, []);
 
-  // Sauvegarder progression
   const saveProgression = useCallback(async (letter: string, isChallenge = false, word?: string) => {
     if (!user) return;
     
@@ -106,7 +92,6 @@ export default function PracticePage() {
     }
   }, [user, showXpGain, refreshProfile]);
 
-  // Validation des lettres
   useEffect(() => {
     if (!isValidated || !displayedLetter) return;
     if (displayedLetter === lastValidatedLetter) return;
@@ -145,7 +130,6 @@ export default function PracticePage() {
     }
   }, [isValidated, displayedLetter, lastValidatedLetter, mode, targetLetter, challengeProgress, currentChallenge, streak, pickRandomLetter, triggerCelebration, saveProgression]);
 
-  // Est-ce la bonne lettre ?
   const isCorrectLetter = (() => {
     if (!displayedLetter) return false;
     if (mode === "free") return displayedLetter === targetLetter;
@@ -159,7 +143,7 @@ export default function PracticePage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-neutral-300 border-t-orange-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin" />
       </div>
     );
   }
@@ -193,75 +177,318 @@ export default function PracticePage() {
         )}
       </AnimatePresence>
 
-      <PracticeHeader score={score} streak={streak} />
+      {/* Header */}
+      <GameHeader 
+        title="Pratique libre"
+        rightContent={
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-neutral-500">{score} pts</span>
+            <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-xs font-medium">
+              {streak} série
+            </span>
+          </div>
+        }
+      />
 
-      <main className="pt-14 sm:pt-16 pb-6 sm:pb-12 px-3 sm:px-4">
-        <div className="max-w-5xl mx-auto">
+      <main className="pt-14 pb-8 px-4">
+        <div className="max-w-6xl mx-auto">
           
-          {/* Mode + Cible */}
-          <div className="mb-4 sm:mb-6">
-            <ModeSelector mode={mode} onChange={handleModeChange} />
-            <TargetDisplay 
-              mode={mode}
-              targetLetter={targetLetter}
-              currentChallenge={currentChallenge}
-              challengeProgress={challengeProgress}
-            />
+          {/* Mode selector */}
+          <div className="flex justify-center gap-2 py-6 border-b border-neutral-200 dark:border-neutral-800">
+            <button
+              onClick={() => handleModeChange("free")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                mode === "free"
+                  ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+              }`}
+            >
+              Lettre aléatoire
+            </button>
+            <button
+              onClick={() => handleModeChange("challenge")}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                mode === "challenge"
+                  ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+              }`}
+            >
+              Épeler un mot
+            </button>
           </div>
 
-          {/* Layout principal */}
-          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Layout 3 colonnes */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 pt-6">
             
-            {/* Webcam */}
-            <section className="lg:col-span-2 order-1">
-              <PracticeWebcam
-                videoRef={videoRef}
-                canvasRef={canvasRef}
-                isStreaming={isStreaming}
-                isLoading={isLoading}
-                loadingStep={loadingStep}
-                loadingProgress={loadingProgress}
-                error={error}
-                onStartCamera={startCamera}
-                displayedLetter={displayedLetter}
-                confidence={confidence}
-                stableProgress={stableProgress}
-                isValidated={isValidated}
-                isCorrectLetter={isCorrectLetter}
-              />
+            {/* Colonne gauche - Lettre cible */}
+            <div className="lg:col-span-3 order-1">
+              <div className="lg:sticky lg:top-20">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                  {mode === "free" ? "Signe cette lettre" : "Épelle le mot"}
+                </p>
+                
+                {mode === "free" && targetLetter && (
+                  <motion.div
+                    key={targetLetter}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                  >
+                    <span className="text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none text-orange-500">
+                      {targetLetter}
+                    </span>
+                  </motion.div>
+                )}
 
+                {mode === "challenge" && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-neutral-500">
+                      {CHALLENGES[currentChallenge].hint}
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {CHALLENGES[currentChallenge].word.split("").map((letter, i) => (
+                        <span
+                          key={i}
+                          className={`text-4xl sm:text-5xl font-black ${
+                            i < challengeProgress.length
+                              ? "text-green-500"
+                              : i === challengeProgress.length
+                              ? "text-orange-500"
+                              : "text-neutral-300 dark:text-neutral-700"
+                          }`}
+                        >
+                          {letter}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {mode === "free" && (
+                  <button
+                    onClick={pickRandomLetter}
+                    className="mt-4 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                  >
+                    🎲 Autre lettre
+                  </button>
+                )}
+
+                {/* Stats mobile */}
+                <div className="flex gap-4 mt-6 lg:mt-8 lg:flex-col">
+                  <div>
+                    <p className="text-3xl font-black">{score}</p>
+                    <p className="text-xs text-neutral-500">Points</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black">{streak}</p>
+                    <p className="text-xs text-neutral-500">Série</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Colonne centrale - Webcam */}
+            <div className="lg:col-span-6 order-2">
+              <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden border-2 border-neutral-200 dark:border-neutral-800">
+                <video ref={videoRef} className="hidden" playsInline muted autoPlay />
+                <canvas
+                  ref={canvasRef}
+                  className={`absolute inset-0 w-full h-full ${isStreaming ? "block" : "hidden"}`}
+                  style={{ objectFit: "cover" }}
+                />
+
+                {/* État initial */}
+                {!isStreaming && !isLoading && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                    <div className="w-20 h-20 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                      <svg className="w-10 h-10 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-neutral-500 mb-4 text-center">
+                      Active ta webcam pour commencer
+                    </p>
+                    <button
+                      onClick={startCamera}
+                      className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold hover:scale-105 transition-transform"
+                    >
+                      Activer 📷
+                    </button>
+                  </div>
+                )}
+
+                {/* Chargement */}
+                {isLoading && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                    <div className="w-12 h-12 border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-4" />
+                    <p className="font-medium mb-1">{loadingStep}</p>
+                    <div className="w-48 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-orange-500 transition-all"
+                        style={{ width: `${loadingProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-neutral-500 mt-3">
+                      Le premier chargement peut prendre quelques secondes
+                    </p>
+                  </div>
+                )}
+
+                {/* Erreur */}
+                {error && (
+                  <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-red-500 text-white text-sm rounded-lg">
+                    {error}
+                  </div>
+                )}
+
+                {/* Overlays quand streaming */}
+                {isStreaming && (
+                  <>
+                    {/* LIVE */}
+                    <div className="absolute top-4 left-4 flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                      <span className="text-xs text-white font-medium bg-black/50 px-2 py-1 rounded">
+                        En direct
+                      </span>
+                    </div>
+
+                    {/* Instruction si pas de main */}
+                    {!displayedLetter && (
+                      <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-black/50 text-white text-sm rounded-lg text-center">
+                        👋 Montre ta main devant la caméra
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Actions */}
               {isStreaming && (
-                <div className="flex justify-center gap-4 mt-3">
+                <div className="flex justify-center gap-4 mt-4">
                   <button
                     onClick={stopCamera}
-                    className="text-xs sm:text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded px-2 py-1"
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                   >
-                    Arrêter
+                    Arrêter la caméra
                   </button>
                   <button
                     onClick={resetGame}
-                    className="text-xs sm:text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded px-2 py-1"
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                   >
                     Recommencer
                   </button>
                 </div>
               )}
-            </section>
+            </div>
 
-            {/* Sidebar */}
-            <aside className="order-2 flex flex-col gap-3 sm:gap-4">
-              <AlphabetGrid
-                mode={mode}
-                targetLetter={targetLetter}
-                displayedLetter={displayedLetter}
-                onSelectLetter={setTargetLetter}
-              />
+            {/* Colonne droite - Résultat */}
+            <div className="lg:col-span-3 order-3">
+              <div className="lg:sticky lg:top-20">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                  Lettre détectée
+                </p>
+                
+                <AnimatePresence mode="wait">
+                  {displayedLetter ? (
+                    <motion.div
+                      key={displayedLetter}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                    >
+                      <span className={`text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none ${
+                        isValidated && isCorrectLetter 
+                          ? "text-green-500" 
+                          : isCorrectLetter
+                          ? "text-orange-500"
+                          : "text-neutral-900 dark:text-white"
+                      }`}>
+                        {displayedLetter}
+                      </span>
+                    </motion.div>
+                  ) : (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-[120px] sm:text-[150px] lg:text-[180px] font-black leading-none text-neutral-200 dark:text-neutral-800"
+                    >
+                      ?
+                    </motion.span>
+                  )}
+                </AnimatePresence>
 
-              <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
-                <SessionStats score={score} streak={streak} />
-                <HelpPanel isDisabled={isStreaming && !!displayedLetter} />
+                {/* Indicateurs */}
+                {displayedLetter && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-neutral-500">
+                      <span>Confiance</span>
+                      <span className="font-bold text-neutral-900 dark:text-white">{confidence}%</span>
+                    </div>
+                    
+                    {!isValidated && (
+                      <div>
+                        <div className="h-1.5 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-orange-500 transition-all"
+                            style={{ width: `${stableProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          Maintiens la position...
+                        </p>
+                      </div>
+                    )}
+
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
+                      isCorrectLetter 
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                        : "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                    }`}>
+                      {isCorrectLetter ? "✓ Correct" : "→ Continue"}
+                    </div>
+                  </div>
+                )}
+
+                {/* Alphabet */}
+                <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">
+                    Alphabet
+                  </p>
+                  <div className="grid grid-cols-6 lg:grid-cols-5 gap-1.5">
+                    {ASL_ALPHABET.map((letter) => {
+                      const isTarget = targetLetter === letter;
+                      const isDetected = displayedLetter === letter;
+
+                      return (
+                        <button
+                          key={letter}
+                          onClick={() => mode === "free" && setTargetLetter(letter)}
+                          disabled={mode !== "free"}
+                          className={`aspect-square rounded-lg text-sm font-bold transition-all ${
+                            isDetected
+                              ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                              : isTarget
+                              ? "bg-orange-500 text-white"
+                              : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                          } ${mode === "free" ? "cursor-pointer" : "cursor-default"}`}
+                        >
+                          {letter}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-neutral-500 mt-3">
+                    <span className="flex items-center gap-1">
+                      <span className="w-3 h-3 rounded bg-orange-500" />
+                      cible
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-3 h-3 rounded bg-neutral-900 dark:bg-white" />
+                      détecté
+                    </span>
+                  </div>
+                </div>
               </div>
-            </aside>
+            </div>
           </div>
         </div>
       </main>

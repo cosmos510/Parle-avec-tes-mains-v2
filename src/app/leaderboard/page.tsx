@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
+import { GameHeader } from "@/components/game";
 
 interface LeaderboardEntry {
   rank: number;
@@ -110,21 +111,12 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md">
-        <nav className="max-w-4xl mx-auto px-4 h-16 flex items-center">
-          <Link href="/" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white">
-            ← Retour
-          </Link>
-        </nav>
-      </header>
+      <GameHeader title="Classement" />
 
-      <main className="pt-24 pb-20 px-4">
+      <main className="pt-20 pb-20 px-4">
         <div className="max-w-2xl mx-auto">
-          {/* Title */}
-          <h1 className="text-5xl sm:text-6xl font-black mb-4">
-            Classement
-          </h1>
-          <p className="text-neutral-500 mb-12">
+          {/* Intro */}
+          <p className="text-neutral-500 mb-10">
             Les meilleurs signeurs de la communauté.
           </p>
 

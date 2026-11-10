@@ -76,11 +76,19 @@ export function HeroSection() {
         >
           <Link 
             href="/practice"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold text-lg hover:scale-105 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+            className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold text-lg hover:scale-105 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
             aria-label="Commencer à pratiquer la langue des signes"
           >
             C&apos;est parti
-            <span className="text-xl" aria-hidden="true">👋</span>
+            <svg 
+              className="w-5 h-5 transition-transform group-hover:translate-x-1" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
           </Link>
           
           <span className="text-sm text-neutral-500" aria-label="Temps estimé">
