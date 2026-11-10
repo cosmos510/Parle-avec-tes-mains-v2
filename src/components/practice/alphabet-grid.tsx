@@ -11,7 +11,7 @@ interface AlphabetGridProps {
 }
 
 /**
- * Grille de l'alphabet ASL
+ * Grille de l'alphabet ASL avec accessibilité complète
  */
 export function AlphabetGrid({
   targetLetter,
@@ -25,12 +25,24 @@ export function AlphabetGrid({
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.1 }}
       className="p-5 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50"
+      role="region"
+      aria-label="Grille de l'alphabet LSF"
     >
-      <h3 className="font-semibold mb-3">Alphabet</h3>
-      <div className="grid grid-cols-6 gap-1.5">
+      <h3 className="font-semibold mb-3" id="alphabet-grid-title">Alphabet</h3>
+      <div 
+        className="grid grid-cols-6 gap-1.5"
+        role="group"
+        aria-labelledby="alphabet-grid-title"
+        aria-describedby="alphabet-grid-description"
+      >
         {ASL_ALPHABET.map((letter) => {
           const isTarget = targetLetter === letter;
           const isDetected = detectedLetter === letter;
+
+          // Construire l'aria-label dynamique
+          let ariaLabel = `Lettre ${letter}`;
+          if (isTarget) ariaLabel += " (lettre cible)";
+          if (isDetected) ariaLabel += " (détectée)";
 
           return (
             <motion.button
@@ -39,6 +51,9 @@ export function AlphabetGrid({
               whileTap={isInteractive ? { scale: 0.95 } : undefined}
               onClick={() => isInteractive && onSelectLetter?.(letter)}
               disabled={!isInteractive}
+              aria-label={ariaLabel}
+              aria-pressed={isTarget || isDetected}
+              aria-current={isTarget ? "true" : undefined}
               className={`
                 aspect-square rounded-lg text-sm font-medium transition-all
                 ${
@@ -49,6 +64,7 @@ export function AlphabetGrid({
                     : "bg-muted/30 hover:bg-muted/50 text-foreground"
                 }
                 ${isInteractive ? "cursor-pointer" : "cursor-default"}
+                focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
               `}
             >
               {letter}
@@ -56,7 +72,10 @@ export function AlphabetGrid({
           );
         })}
       </div>
-      <p className="text-xs text-muted-foreground mt-3 text-center">
+      <p 
+        id="alphabet-grid-description" 
+        className="text-xs text-muted-foreground mt-3 text-center"
+      >
         J et Z nécessitent un mouvement
       </p>
     </motion.div>

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
+import { NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
+import { withAuth, badRequest, notFound } from '@/lib/api-auth';
 
 /**
  * API Route pour envoyer une demande d'ami
@@ -8,105 +8,83 @@ import { FieldValue } from 'firebase-admin/firestore';
  * Body: { toUserId: string }
  * Header: Authorization: Bearer <token>
  */
-export async function POST(request: NextRequest) {
-  try {
-    // Vérifier l'authentification
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-    }
+export const POST = withAuth(async ({ userId, db, request }) => {
+  const { toUserId } = await request.json();
 
-    const auth = getAdminAuth();
-    const adminDb = getAdminDb();
-    
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await auth.verifyIdToken(token);
-    const fromUserId = decodedToken.uid;
+  if (!toUserId) {
+    return badRequest('ID utilisateur manquant');
+  }
 
-    const { toUserId } = await request.json();
+  if (userId === toUserId) {
+    return badRequest("Tu ne peux pas t'ajouter toi-même");
+  }
 
-    if (!toUserId) {
-      return NextResponse.json({ error: 'ID utilisateur manquant' }, { status: 400 });
-    }
+  // Vérifier que les deux utilisateurs existent
+  const [fromDoc, toDoc] = await Promise.all([
+    db.collection('users').doc(userId).get(),
+    db.collection('users').doc(toUserId).get(),
+  ]);
 
-    if (fromUserId === toUserId) {
-      return NextResponse.json({ error: 'Tu ne peux pas t\'ajouter toi-même' }, { status: 400 });
-    }
+  if (!fromDoc.exists) {
+    return notFound("Ton profil n'existe pas");
+  }
 
-    // Vérifier que les deux utilisateurs existent
-    const [fromDoc, toDoc] = await Promise.all([
-      adminDb.collection('users').doc(fromUserId).get(),
-      adminDb.collection('users').doc(toUserId).get(),
-    ]);
+  if (!toDoc.exists) {
+    return notFound('Utilisateur introuvable');
+  }
 
-    if (!fromDoc.exists) {
-      return NextResponse.json({ error: 'Ton profil n\'existe pas' }, { status: 404 });
-    }
+  const fromData = fromDoc.data()!;
 
-    if (!toDoc.exists) {
-      return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });
-    }
+  // Vérifier s'ils sont déjà amis
+  if (fromData.friends?.includes(toUserId)) {
+    return badRequest('Vous êtes déjà amis');
+  }
 
-    const fromData = fromDoc.data()!;
+  // Vérifier si une demande est déjà en cours
+  if (fromData.friendRequests?.outgoing?.includes(toUserId)) {
+    return badRequest('Demande déjà envoyée');
+  }
 
-    // Vérifier s'ils sont déjà amis
-    if (fromData.friends?.includes(toUserId)) {
-      return NextResponse.json({ error: 'Vous êtes déjà amis' }, { status: 400 });
-    }
-
-    // Vérifier si une demande est déjà en cours
-    if (fromData.friendRequests?.outgoing?.includes(toUserId)) {
-      return NextResponse.json({ error: 'Demande déjà envoyée' }, { status: 400 });
-    }
-
-    // Vérifier si l'autre a déjà envoyé une demande (accepter automatiquement)
-    if (fromData.friendRequests?.incoming?.includes(toUserId)) {
-      // L'autre a déjà envoyé une demande, on accepte
-      const batch = adminDb.batch();
-      
-      batch.update(fromDoc.ref, {
-        friends: FieldValue.arrayUnion(toUserId),
-        'friendRequests.incoming': FieldValue.arrayRemove(toUserId),
-      });
-      
-      batch.update(toDoc.ref, {
-        friends: FieldValue.arrayUnion(fromUserId),
-        'friendRequests.outgoing': FieldValue.arrayRemove(fromUserId),
-      });
-      
-      await batch.commit();
-      
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Demande acceptée, vous êtes maintenant amis !',
-        status: 'accepted'
-      });
-    }
-
-    // Envoyer la demande
-    const batch = adminDb.batch();
+  // Vérifier si l'autre a déjà envoyé une demande (accepter automatiquement)
+  if (fromData.friendRequests?.incoming?.includes(toUserId)) {
+    // L'autre a déjà envoyé une demande, on accepte
+    const batch = db.batch();
     
     batch.update(fromDoc.ref, {
-      'friendRequests.outgoing': FieldValue.arrayUnion(toUserId),
+      friends: FieldValue.arrayUnion(toUserId),
+      'friendRequests.incoming': FieldValue.arrayRemove(toUserId),
     });
     
     batch.update(toDoc.ref, {
-      'friendRequests.incoming': FieldValue.arrayUnion(fromUserId),
+      friends: FieldValue.arrayUnion(userId),
+      'friendRequests.outgoing': FieldValue.arrayRemove(userId),
     });
     
     await batch.commit();
-
+    
     return NextResponse.json({ 
       success: true, 
-      message: 'Demande envoyée !',
-      status: 'pending'
+      message: 'Demande acceptée, vous êtes maintenant amis !',
+      status: 'accepted'
     });
-
-  } catch (error) {
-    console.error('Erreur demande d\'ami:', error);
-    return NextResponse.json(
-      { error: 'Erreur lors de l\'envoi de la demande' },
-      { status: 500 }
-    );
   }
-}
+
+  // Envoyer la demande
+  const batch = db.batch();
+  
+  batch.update(fromDoc.ref, {
+    'friendRequests.outgoing': FieldValue.arrayUnion(toUserId),
+  });
+  
+  batch.update(toDoc.ref, {
+    'friendRequests.incoming': FieldValue.arrayUnion(userId),
+  });
+  
+  await batch.commit();
+
+  return NextResponse.json({ 
+    success: true, 
+    message: 'Demande envoyée !',
+    status: 'pending'
+  });
+});

@@ -389,6 +389,9 @@ export default function ProfilePage() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
             onClick={() => !isExporting && setShowExportModal(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="export-modal-title"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -409,7 +412,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <>
-                  <h3 className="text-xl font-bold mb-2">Exporter mes données</h3>
+                  <h3 id="export-modal-title" className="text-xl font-bold mb-2">Exporter mes données</h3>
                   <p className="text-neutral-500 mb-6">
                     Tu vas télécharger un fichier JSON contenant toutes tes données personnelles :
                     profil, progression, badges, statistiques, etc.
@@ -451,6 +454,10 @@ export default function ProfilePage() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
             onClick={() => !isDeleting && setShowDeleteModal(false)}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-modal-title"
+            aria-describedby="delete-modal-description"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -465,8 +472,8 @@ export default function ProfilePage() {
                 </svg>
               </div>
               
-              <h3 className="text-xl font-bold text-center mb-2">Supprimer mon compte</h3>
-              <p className="text-neutral-500 text-center mb-6">
+              <h3 id="delete-modal-title" className="text-xl font-bold text-center mb-2">Supprimer mon compte</h3>
+              <p id="delete-modal-description" className="text-neutral-500 text-center mb-6">
                 Cette action est <strong>irréversible</strong>. Tes données personnelles seront anonymisées 
                 conformément au RGPD. Tes scores pourront être conservés de manière anonyme.
               </p>

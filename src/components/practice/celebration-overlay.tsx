@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface CelebrationOverlayProps {
@@ -38,10 +38,22 @@ const STATIC_PARTICLES = generateParticles();
 
 /**
  * Overlay de célébration avec confettis animés
+ * Accessible avec role="status" pour les lecteurs d'écran
  */
 export function CelebrationOverlay({ show }: CelebrationOverlayProps) {
   // State pour les particules - initialisé avec les particules statiques
   const [particles] = useState<ConfettiParticle[]>(STATIC_PARTICLES);
+  const [announced, setAnnounced] = useState(false);
+
+  // Annoncer le succès une seule fois quand show devient true
+  useEffect(() => {
+    if (show && !announced) {
+      setAnnounced(true);
+    }
+    if (!show) {
+      setAnnounced(false);
+    }
+  }, [show, announced]);
 
   return (
     <AnimatePresence>
@@ -51,17 +63,21 @@ export function CelebrationOverlay({ show }: CelebrationOverlayProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center"
+          role="status"
+          aria-live="polite"
+          aria-label="Félicitations ! Lettre validée avec succès"
         >
           {/* Emoji principal */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: [0, 1.2, 1] }}
             className="text-8xl"
+            aria-hidden="true"
           >
             🎉
           </motion.div>
 
-          {/* Confettis */}
+          {/* Confettis - purement décoratifs */}
           {particles.map((particle) => (
             <motion.div
               key={particle.id}
@@ -84,6 +100,7 @@ export function CelebrationOverlay({ show }: CelebrationOverlayProps) {
                 left: "50%",
                 top: "50%",
               }}
+              aria-hidden="true"
             >
               {particle.emoji}
             </motion.div>
