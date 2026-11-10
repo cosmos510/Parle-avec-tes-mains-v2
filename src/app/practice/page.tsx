@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useMediaPipeHands } from "@/hooks/useMediaPipeHands";
 import { useLetterStabilization } from "@/hooks/useLetterStabilization";
+import { useAuth } from "@/contexts/AuthContext";
+import { recordLetterValidation, recordChallengeComplete } from "@/lib/progression";
 import { ASL_ALPHABET, CHALLENGES, SCORING } from "@/lib/constants";
 import type { PracticeMode } from "@/types/practice";
 
@@ -49,6 +51,9 @@ export default function PracticePage() {
   const [showHints, setShowHints] = useState(false);
   const [selectedHintLetter, setSelectedHintLetter] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const [xpNotification, setXpNotification] = useState<{ xp: number; message: string } | null>(null);
+
+  const { user, refreshProfile } = useAuth();
 
   const {
     videoRef,
@@ -72,6 +77,12 @@ export default function PracticePage() {
     predictedLetter,
     isActive: isStreaming,
   });
+
+  // Show XP notification
+  const showXpGain = useCallback((xp: number, message: string) => {
+    setXpNotification({ xp, message });
+    setTimeout(() => setXpNotification(null), 2000);
+  }, []);
 
   // Announce changes for screen readers
   const announce = useCallback((message: string) => {
@@ -131,6 +142,32 @@ export default function PracticePage() {
     }
   }, [displayedLetter, isValidated, announce]);
 
+  // Save progression to Firebase when user validates a letter
+  const saveProgression = useCallback(async (letter: string, isChallenge: boolean = false, word?: string) => {
+    if (!user) return;
+    
+    try {
+      if (isChallenge && word) {
+        const result = await recordChallengeComplete(user.uid, word, true);
+        showXpGain(result.xpGained, "Challenge terminé !");
+      } else {
+        const result = await recordLetterValidation(user.uid, letter);
+        let message = `+${result.xpGained} XP`;
+        if (result.letterMastered) {
+          message = `${letter} maîtrisée ! +${result.xpGained} XP`;
+        }
+        if (result.newLevel) {
+          message += " 🎉 Niveau supérieur !";
+        }
+        showXpGain(result.xpGained, message);
+      }
+      // Refresh profile to update navbar/stats
+      refreshProfile();
+    } catch (error) {
+      console.error("Error saving progression:", error);
+    }
+  }, [user, showXpGain, refreshProfile]);
+
   useEffect(() => {
     if (!isValidated || !displayedLetter) return;
     if (displayedLetter === lastValidatedLetter) return;
@@ -141,6 +178,8 @@ export default function PracticePage() {
       setScore((s) => s + SCORING.FREE_MODE_SUCCESS);
       setStreak((s) => s + 1);
       triggerCelebration();
+      // Save to Firebase if logged in
+      saveProgression(displayedLetter);
       setTimeout(pickRandomLetter, 1500);
     }
 
@@ -156,10 +195,15 @@ export default function PracticePage() {
         if (newProgress.length === challenge.word.length) {
           setScore((s) => s + SCORING.CHALLENGE_COMPLETE + streak * SCORING.STREAK_BONUS_PER);
           triggerCelebration();
+          // Save challenge completion to Firebase
+          saveProgression(displayedLetter, true, challenge.word);
           setTimeout(() => {
             setChallengeProgress([]);
             setCurrentChallenge((c) => (c + 1) % CHALLENGES.length);
           }, 2000);
+        } else {
+          // Save individual letter progress
+          saveProgression(displayedLetter);
         }
       }
     }
@@ -174,6 +218,7 @@ export default function PracticePage() {
     streak,
     pickRandomLetter,
     triggerCelebration,
+    saveProgression,
   ]);
 
   const isCorrectLetter = (() => {
@@ -209,6 +254,20 @@ export default function PracticePage() {
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full font-semibold text-sm shadow-lg"
           >
             ✓ Bien joué !
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* XP Notification */}
+      <AnimatePresence>
+        {xpNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -20, x: "-50%" }}
+            className="fixed top-20 left-1/2 z-50 px-4 py-2 bg-orange-500 text-white rounded-full font-semibold text-sm shadow-lg"
+          >
+            {xpNotification.message}
           </motion.div>
         )}
       </AnimatePresence>
