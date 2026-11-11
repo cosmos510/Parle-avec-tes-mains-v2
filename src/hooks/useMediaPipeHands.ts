@@ -179,26 +179,15 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
       
       // Étape 2: Obtenir le flux vidéo
       let stream: MediaStream;
-      
-      // Détecter si on est sur mobile pour adapter la résolution
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const videoConstraints = isMobile 
-        ? {
-            width: { ideal: 480 },
-            height: { ideal: 360 },
-            frameRate: { ideal: 24 },
-            facingMode: 'user',
-          }
-        : {
+      try {
+        // Essayer d'abord avec les contraintes idéales
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
             width: { ideal: 640 },
             height: { ideal: 480 },
             frameRate: { ideal: 30 },
             facingMode: 'user',
-          };
-      
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: videoConstraints,
+          },
         });
       } catch {
         // Fallback : contraintes minimales si les premières échouent
