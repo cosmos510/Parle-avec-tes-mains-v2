@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMediaPipeHands } from "@/hooks/useMediaPipeHands";
 import { useLetterStabilization } from "@/hooks/useLetterStabilization";
-import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useOptionalAuth } from "@/hooks/useOptionalAuth";
 import { recordLetterValidation, recordChallengeComplete } from "@/lib/progression";
 import { ASL_ALPHABET, CHALLENGES, SCORING } from "@/lib/constants";
 import Link from "next/link";
@@ -13,7 +13,7 @@ import { GameBackground, CameraPlaceholder } from "@/components/ui";
 import type { PracticeMode } from "@/types/practice";
 
 export default function PracticePage() {
-  const { user, loading: authLoading, refreshProfile } = useRequireAuth();
+  const { user, loading: authLoading, refreshProfile } = useOptionalAuth();
 
   const [mode, setMode] = useState<PracticeMode>("free");
   const [currentChallenge, setCurrentChallenge] = useState(0);
@@ -141,14 +141,6 @@ export default function PracticePage() {
     }
     return false;
   })();
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <GameBackground variant="practice">
