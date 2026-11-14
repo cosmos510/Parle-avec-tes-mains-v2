@@ -52,10 +52,13 @@ export function ShareChallenge({ shareUrl, finalTime }: ShareChallengeProps) {
 
       {/* URL input */}
       <div className="flex gap-2">
+        <label htmlFor="share-url" className="sr-only">Lien de partage</label>
         <input
+          id="share-url"
           type="text"
           value={shareUrl}
           readOnly
+          aria-label="Lien de partage"
           className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs font-mono truncate"
         />
         <button
