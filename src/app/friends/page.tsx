@@ -115,15 +115,15 @@ export default function FriendsPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl p-1 mb-6">
               <TabsTrigger value="friends">
-                <Users className="w-4 h-4 mr-2" />
+                <Users className="w-4 h-4 mr-2" aria-hidden="true" />
                 Amis ({friends.length})
               </TabsTrigger>
               <TabsTrigger value="search">
-                <Search className="w-4 h-4 mr-2" />
+                <Search className="w-4 h-4 mr-2" aria-hidden="true" />
                 Rechercher
               </TabsTrigger>
               <TabsTrigger value="pending" className="relative">
-                <Clock className="w-4 h-4 mr-2" />
+                <Clock className="w-4 h-4 mr-2" aria-hidden="true" />
                 En attente
                 {totalPending > 0 && (
                   <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
