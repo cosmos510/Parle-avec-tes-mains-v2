@@ -39,7 +39,9 @@ function ModeButton({
   return (
     <button
       onClick={onClick}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
       role="tab"
+      tabIndex={0}
       aria-selected={active}
       className={`px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-all ${
         active

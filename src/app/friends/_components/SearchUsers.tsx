@@ -83,12 +83,15 @@ export function SearchUsers({ currentUserId, onRequestSent }: SearchUsersProps) 
     <div className="space-y-4">
       {/* Barre de recherche */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" aria-hidden="true" />
+        <label htmlFor="search-users" className="sr-only">Rechercher un utilisateur</label>
         <input
+          id="search-users"
           type="text"
           placeholder="Rechercher par pseudo ou email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Rechercher un utilisateur"
           className="w-full pl-12 pr-12 py-3 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 bg-transparent focus:border-orange-500 focus:outline-none transition-colors"
         />
         {isSearching && (

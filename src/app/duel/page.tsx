@@ -337,12 +337,15 @@ function DuelContent() {
           >
             <p className="text-sm text-neutral-500 mb-3">Rejoindre avec un code</p>
             <div className="flex gap-3">
+              <label htmlFor="join-code" className="sr-only">Code de la partie</label>
               <input
+                id="join-code"
                 type="text"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 placeholder="ABC123"
                 maxLength={6}
+                aria-label="Code de la partie"
                 className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-transparent text-center font-mono text-xl tracking-widest uppercase focus:outline-none focus:border-orange-500"
               />
               <button
