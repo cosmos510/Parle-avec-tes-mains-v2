@@ -81,7 +81,7 @@ function ResetPasswordForm() {
   // État de chargement
   if (validatingCode) {
     return (
-      <div className="text-center">
+      <div className="text-center" role="status" aria-label="Vérification du lien">
         <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mx-auto mb-4" />
         <p className="text-neutral-500">Verification du lien...</p>
       </div>
@@ -91,8 +91,8 @@ function ResetPasswordForm() {
   // Lien invalide
   if (invalidCode) {
     return (
-      <div className="w-full max-w-sm text-center">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+      <div className="w-full max-w-sm text-center" role="alert">
+        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center" aria-hidden="true">
           <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -117,8 +117,8 @@ function ResetPasswordForm() {
   // Succès
   if (success) {
     return (
-      <div className="w-full max-w-sm text-center">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+      <div className="w-full max-w-sm text-center" role="status" aria-live="polite">
+        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center" aria-hidden="true">
           <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -148,13 +148,13 @@ function ResetPasswordForm() {
         <Link href="/" className="text-2xl font-black">
           Parle avec tes mains
         </Link>
-        <p className="text-neutral-500 mt-2">
+        <p className="text-neutral-500 mt-2" id="form-description">
           Nouveau mot de passe pour <span className="font-medium">{email}</span>
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" aria-describedby={error ? "error-message" : "form-description"}>
         <div>
           <label htmlFor="password" className="block text-sm font-medium mb-2">
             Nouveau mot de passe
@@ -188,12 +188,13 @@ function ResetPasswordForm() {
         </div>
 
         {error && (
-          <p className="text-red-500 text-sm text-center">{error}</p>
+          <p id="error-message" className="text-red-500 text-sm text-center" role="alert">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={loading}
+          aria-busy={loading}
           className="w-full px-4 py-3 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {loading ? "Modification..." : "Modifier le mot de passe"}
@@ -202,7 +203,7 @@ function ResetPasswordForm() {
 
       {/* Back to login */}
       <p className="text-center text-sm text-neutral-500 mt-6">
-        <Link href="/login" className="text-orange-500 font-medium hover:underline">
+        <Link href="/login" className="text-orange-500 font-medium hover:underline" aria-label="Retour à la page de connexion">
           ← Retour a la connexion
         </Link>
       </p>
@@ -212,9 +213,9 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center px-4">
+    <main className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center px-4" role="main" aria-labelledby="page-title">
       <Suspense fallback={
-        <div className="text-center">
+        <div className="text-center" role="status" aria-label="Chargement">
           <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mx-auto mb-4" />
           <p className="text-neutral-500">Chargement...</p>
         </div>

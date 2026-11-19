@@ -16,6 +16,9 @@ export function GameCountdown({ count }: GameCountdownProps) {
       initial={{ scale: 0.5, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       className="text-8xl font-black text-orange-500"
+      role="status"
+      aria-live="assertive"
+      aria-label={`Décompte: ${count}`}
     >
       {count}
     </motion.p>

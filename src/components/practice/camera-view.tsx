@@ -32,9 +32,11 @@ export function CameraView({
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       className="relative aspect-video rounded-3xl overflow-hidden bg-card border border-border/50"
+      role="region"
+      aria-label="Zone de la caméra"
     >
       {/* Video caché (utilisé par MediaPipe) */}
-      <video ref={videoRef} className="hidden" playsInline muted />
+      <video ref={videoRef} className="hidden" playsInline muted aria-hidden="true" />
 
       {/* Canvas avec le rendu */}
       <canvas
@@ -42,6 +44,7 @@ export function CameraView({
         className={`absolute inset-0 w-full h-full object-cover ${
           isStreaming ? "block" : "hidden"
         }`}
+        aria-label="Flux vidéo de la caméra"
       />
 
       {/* État initial / chargement */}
@@ -69,7 +72,7 @@ export function CameraView({
 
 function LoadingState() {
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4" role="status" aria-label="Chargement de l'IA">
       <div className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin" />
       <p className="text-muted-foreground">Chargement de l&apos;IA...</p>
     </div>
@@ -79,7 +82,7 @@ function LoadingState() {
 function InitialState({ onStartCamera }: { onStartCamera: () => void }) {
   return (
     <div className="flex flex-col items-center gap-6 text-center px-4">
-      <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+      <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center" aria-hidden="true">
         <Camera className="w-12 h-12 text-primary" />
       </div>
       <div>
@@ -98,7 +101,7 @@ function InitialState({ onStartCamera }: { onStartCamera: () => void }) {
 
 function ErrorBanner({ message }: { message: string }) {
   return (
-    <div className="absolute bottom-4 left-4 right-4 bg-red-500/90 text-white px-4 py-3 rounded-2xl text-sm">
+    <div className="absolute bottom-4 left-4 right-4 bg-red-500/90 text-white px-4 py-3 rounded-2xl text-sm" role="alert">
       {message}
     </div>
   );
@@ -106,8 +109,8 @@ function ErrorBanner({ message }: { message: string }) {
 
 function LiveIndicator() {
   return (
-    <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm">
-      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+    <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm" aria-live="polite">
+      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
       <span className="text-xs text-white font-medium">LIVE</span>
     </div>
   );

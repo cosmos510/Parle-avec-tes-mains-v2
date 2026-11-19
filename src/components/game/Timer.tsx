@@ -23,7 +23,12 @@ export function Timer({ timeMs, size = "md", className = "" }: TimerProps) {
   };
 
   return (
-    <p className={`font-mono font-bold ${sizeClasses[size]} ${className}`}>
+    <p 
+      className={`font-mono font-bold ${sizeClasses[size]} ${className}`}
+      role="timer"
+      aria-live="polite"
+      aria-label={`Temps: ${formatTime(timeMs)}`}
+    >
       {formatTime(timeMs)}
     </p>
   );

@@ -29,6 +29,8 @@ export function LetterDisplay({
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className={`${sizeClasses[size]} font-black text-orange-500`}
+        aria-live="polite"
+        aria-label={`Lettre cible: ${letter}`}
       >
         {letter}
       </motion.p>
@@ -36,7 +38,10 @@ export function LetterDisplay({
   }
 
   return (
-    <p className={`${sizeClasses[size]} font-black text-orange-500`}>
+    <p 
+      className={`${sizeClasses[size]} font-black text-orange-500`}
+      aria-label={`Lettre cible: ${letter}`}
+    >
       {letter}
     </p>
   );

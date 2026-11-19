@@ -8,24 +8,25 @@ export const metadata: Metadata = {
 
 export default function MentionsLegalesPage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-950 pt-16 pb-20">
+    <main className="min-h-screen bg-white dark:bg-neutral-950 pt-16 pb-20" role="main" aria-labelledby="page-title">
       <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <Link 
           href="/" 
           className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white mb-8"
+          aria-label="Retour à l'accueil"
         >
           ← Retour à l&apos;accueil
         </Link>
 
-        <h1 className="text-4xl sm:text-5xl font-black mb-4">Mentions légales</h1>
+        <h1 id="page-title" className="text-4xl sm:text-5xl font-black mb-4">Mentions légales</h1>
         <p className="text-neutral-500 mb-12">
           Informations légales du site parle-avec-tes-mains.fr
         </p>
 
         {/* Éditeur */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Éditeur du site</h2>
+        <section className="mb-12" aria-labelledby="editeur-title">
+          <h2 id="editeur-title" className="text-xl font-bold mb-4">Éditeur du site</h2>
           <div className="p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
@@ -66,8 +67,8 @@ export default function MentionsLegalesPage() {
         </section>
 
         {/* Hébergement */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Hébergement</h2>
+        <section className="mb-12" aria-labelledby="hebergement-title">
+          <h2 id="hebergement-title" className="text-xl font-bold mb-4">Hébergement</h2>
           <div className="p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <p className="font-semibold mb-2">Vercel Inc.</p>
             <p className="text-neutral-500">
@@ -79,8 +80,8 @@ export default function MentionsLegalesPage() {
         </section>
 
         {/* Propriété intellectuelle */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Propriété intellectuelle</h2>
+        <section className="mb-12" aria-labelledby="propriete-title">
+          <h2 id="propriete-title" className="text-xl font-bold mb-4">Propriété intellectuelle</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               Ce projet est open source et disponible sur{" "}
@@ -101,8 +102,8 @@ export default function MentionsLegalesPage() {
         </section>
 
         {/* Responsabilité */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Limitation de responsabilité</h2>
+        <section className="mb-12" aria-labelledby="responsabilite-title">
+          <h2 id="responsabilite-title" className="text-xl font-bold mb-4">Limitation de responsabilité</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               Les informations contenues sur ce site sont fournies à titre indicatif. 
@@ -117,8 +118,8 @@ export default function MentionsLegalesPage() {
         </section>
 
         {/* Liens */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Liens hypertextes</h2>
+        <section className="mb-12" aria-labelledby="liens-title">
+          <h2 id="liens-title" className="text-xl font-bold mb-4">Liens hypertextes</h2>
           <p className="text-neutral-600 dark:text-neutral-400">
             Le site peut contenir des liens vers d&apos;autres sites. L&apos;éditeur n&apos;exerce 
             aucun contrôle sur ces sites tiers et décline toute responsabilité quant 
@@ -127,8 +128,8 @@ export default function MentionsLegalesPage() {
         </section>
 
         {/* Crédits */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Crédits</h2>
+        <section className="mb-12" aria-labelledby="credits-title">
+          <h2 id="credits-title" className="text-xl font-bold mb-4">Crédits</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800">
               <p className="text-sm text-neutral-500 mb-1">Design & Développement</p>
@@ -146,6 +147,7 @@ export default function MentionsLegalesPage() {
           <Link 
             href="/rgpd"
             className="inline-flex px-6 py-3 rounded-full border border-neutral-300 dark:border-neutral-700 text-sm font-medium hover:border-orange-500 transition-colors"
+            aria-label="Consulter la politique de confidentialité"
           >
             Voir la politique de confidentialité
           </Link>
