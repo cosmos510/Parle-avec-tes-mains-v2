@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://parle-avec-tes-mains.vercel.app/sitemap.xml",
+    sitemap: "https://www.parle-avec-tes-mains.fr/sitemap.xml",
   };
 }
