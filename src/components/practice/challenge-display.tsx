@@ -17,9 +17,11 @@ export function ChallengeDisplay({ challenge, progress }: ChallengeDisplayProps)
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       className="text-center mb-8"
+      role="region"
+      aria-label="Challenge en cours"
     >
       <p className="text-sm text-muted-foreground mb-2">{challenge.hint}</p>
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-2" role="list" aria-label="Lettres du mot">
         {challenge.word.split("").map((letter, i) => {
           const isCompleted = !!progress[i];
           const isActive = i === progress.length;
@@ -27,6 +29,8 @@ export function ChallengeDisplay({ challenge, progress }: ChallengeDisplayProps)
           return (
             <motion.div
               key={i}
+              role="listitem"
+              aria-label={`Lettre ${i + 1}: ${isCompleted ? progress[i] : (isActive ? 'en cours' : 'non complétée')}`}
               initial={{ scale: 0.8 }}
               animate={{
                 scale: isCompleted ? 1.1 : 1,

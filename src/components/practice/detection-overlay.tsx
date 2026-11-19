@@ -28,6 +28,8 @@ export function DetectionOverlay({
       initial={{ opacity: 0, scale: 0.8, y: -20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       className="absolute top-4 right-4"
+      role="status"
+      aria-live="polite"
     >
       <div
         className={`
@@ -40,13 +42,20 @@ export function DetectionOverlay({
         `}
       >
         <div className="text-center">
-          <span className="text-4xl font-bold">{letter}</span>
+          <span className="text-4xl font-bold" aria-label={`Lettre détectée: ${letter}`}>{letter}</span>
           <div className="text-xs mt-1 opacity-80">{confidence}% confiance</div>
 
           {/* Barre de progression */}
           {!isValidated && (
             <div className="mt-2">
-              <div className="h-1.5 w-20 bg-black/20 rounded-full overflow-hidden">
+              <div 
+                className="h-1.5 w-20 bg-black/20 rounded-full overflow-hidden"
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Progression de validation"
+              >
                 <div
                   className="h-full bg-primary transition-all duration-100"
                   style={{ width: `${progress}%` }}
@@ -72,8 +81,8 @@ export function DetectionOverlay({
  */
 export function NoHandPlaceholder() {
   return (
-    <div className="absolute top-4 right-4 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border/50">
-      <span className="text-sm text-muted-foreground">Montrez votre main 👋</span>
+    <div className="absolute top-4 right-4 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border/50" role="status" aria-live="polite">
+      <span className="text-sm text-muted-foreground">Montrez votre main <span aria-hidden="true">👋</span></span>
     </div>
   );
 }

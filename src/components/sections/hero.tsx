@@ -1,21 +1,7 @@
-"use client";
-
 import Link from "next/link";
-import { useState, useEffect } from "react";
-
-const letters = ["A", "B", "C", "Y", "L", "V"];
+import { RotatingLetter } from "./rotating-letter";
 
 export function HeroSection() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % letters.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <section 
@@ -25,7 +11,7 @@ export function HeroSection() {
       <div className="max-w-4xl mx-auto w-full">
         
         {/* Main headline */}
-        <div className={`mb-8 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="mb-8">
           <h1 
             id="hero-heading"
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95]"
@@ -33,22 +19,14 @@ export function HeroSection() {
             Apprends à signer
             <br />
             <span className="inline-flex items-baseline">
-              la lettre{" "}
-              <span
-                key={currentIndex}
-                className="inline-block ml-3 text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-orange-500 animate-fade-in"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                {letters[currentIndex]}
-              </span>
+              la lettre <RotatingLetter />
             </span>
           </h1>
         </div>
 
         {/* Subtitle */}
         <p
-          className={`text-xl md:text-2xl text-neutral-600 dark:text-neutral-400 max-w-xl mb-10 transition-opacity duration-500 delay-100 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+          className="text-xl md:text-2xl text-neutral-600 dark:text-neutral-400 max-w-xl mb-10"
         >
           Ta webcam + un peu de pratique = tu sais signer l&apos;alphabet LSF. 
           Gratuit, sans compte, 100% dans ton navigateur.
@@ -56,7 +34,7 @@ export function HeroSection() {
 
         {/* CTA */}
         <div
-          className={`flex flex-wrap items-center gap-4 transition-opacity duration-500 delay-200 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+          className="flex flex-wrap items-center gap-4"
           role="group"
           aria-label="Actions principales"
         >
@@ -84,7 +62,7 @@ export function HeroSection() {
 
         {/* Visual hint */}
         <div
-          className={`mt-20 flex items-center gap-6 transition-opacity duration-500 delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+          className="mt-20 flex items-center gap-6"
           aria-label="Aperçu des lettres disponibles"
           role="presentation"
         >

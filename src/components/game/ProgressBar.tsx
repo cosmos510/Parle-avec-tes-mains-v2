@@ -15,7 +15,14 @@ export function ProgressBar({ current, total, className = "" }: ProgressBarProps
   const percentage = (current / total) * 100;
 
   return (
-    <div className={`h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden ${className}`}>
+    <div 
+      className={`h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden ${className}`}
+      role="progressbar"
+      aria-valuenow={current}
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-label={`Progression: ${current} sur ${total}`}
+    >
       <motion.div
         className="h-full bg-orange-500"
         initial={{ width: 0 }}

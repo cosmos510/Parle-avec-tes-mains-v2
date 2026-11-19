@@ -22,7 +22,7 @@ export function CameraControls({
   onReset,
 }: CameraControlsProps) {
   return (
-    <div className="flex items-center justify-center gap-3">
+    <div className="flex items-center justify-center gap-3" role="group" aria-label="Contrôles de la caméra">
       {isStreaming ? (
         <>
           <Button onClick={onStopCamera} variant="outline" className="rounded-full">
@@ -38,6 +38,7 @@ export function CameraControls({
         <Button
           onClick={onStartCamera}
           disabled={isLoading}
+          aria-busy={isLoading}
           className="rounded-full px-6"
         >
           <Camera className="w-4 h-4 mr-2" />

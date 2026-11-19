@@ -28,8 +28,8 @@ export default function BadgesPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin" />
+      <main className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center" role="main" aria-busy="true">
+        <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin" role="status" aria-label="Chargement" />
       </main>
     );
   }
@@ -55,13 +55,14 @@ export default function BadgesPage() {
   });
 
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-950 pt-20 pb-12 px-4">
+    <main className="min-h-screen bg-white dark:bg-neutral-950 pt-20 pb-12 px-4" role="main" aria-labelledby="page-title">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Link 
             href="/profile" 
             className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+            aria-label="Retour au profil"
           >
             ← Profil
           </Link>
@@ -69,7 +70,7 @@ export default function BadgesPage() {
 
         {/* Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-black mb-2">Badges</h1>
+          <h1 id="page-title" className="text-4xl font-black mb-2">Badges</h1>
           <p className="text-neutral-500">
             {earnedCount} / {totalCount} débloqués
           </p>
@@ -77,7 +78,14 @@ export default function BadgesPage() {
 
         {/* Progress bar */}
         <div className="mb-8">
-          <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+          <div 
+            className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={earnedCount}
+            aria-valuemin={0}
+            aria-valuemax={totalCount}
+            aria-label={`${earnedCount} badges sur ${totalCount} débloqués`}
+          >
             <div 
               className="h-full bg-orange-500 transition-all duration-500"
               style={{ width: `${(earnedCount / totalCount) * 100}%` }}
@@ -86,11 +94,14 @@ export default function BadgesPage() {
         </div>
 
         {/* Category tabs */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2" role="tablist" aria-label="Catégories de badges">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
+              role="tab"
+              aria-selected={activeCategory === cat.id}
+              aria-controls="badges-grid"
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 activeCategory === cat.id
                   ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
@@ -103,12 +114,13 @@ export default function BadgesPage() {
         </div>
 
         {/* Badges grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div id="badges-grid" className="grid grid-cols-2 sm:grid-cols-3 gap-4" role="tabpanel" aria-label="Liste des badges">
           {sortedBadges.map((badge) => {
             const isEarned = userBadges.includes(badge.id);
             return (
-              <div
+              <article
                 key={badge.id}
+                aria-label={`Badge ${badge.name}${isEarned ? ', obtenu' : ', non obtenu'}`}
                 className={`p-4 rounded-2xl border-2 transition-all ${
                   isEarned 
                     ? getRarityColor(badge.rarity)
@@ -127,7 +139,7 @@ export default function BadgesPage() {
                     </span>
                   )}
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>

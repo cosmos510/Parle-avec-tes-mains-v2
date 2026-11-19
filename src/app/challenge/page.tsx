@@ -28,7 +28,7 @@ export default function ChallengePage() {
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center">
+    <div className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center" role="status" aria-label="Chargement">
       <div className="w-8 h-8 border-2 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin" />
     </div>
   );
@@ -140,12 +140,12 @@ function ChallengeContent() {
       {/* Header */}
       <GameHeader title={title} />
 
-      <main className="pt-32 pb-8 px-4">
+      <main className="pt-32 pb-8 px-4" role="main" aria-labelledby="challenge-title">
         <div className="max-w-6xl mx-auto">
           
           {/* Bannière défi */}
           {opponentResult && gameState === "idle" && (
-            <div className="py-6 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="py-6 border-b border-neutral-200 dark:border-neutral-800" role="banner" aria-label="Défi en cours">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-center sm:text-left">
                   <p className="text-sm text-neutral-500">
@@ -171,7 +171,7 @@ function ChallengeContent() {
             {/* Colonne gauche - Mot */}
             <div className="lg:col-span-3 order-1">
               <div className="lg:sticky lg:top-20">
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2" id="challenge-title">
                   {gameState === "playing" ? "Épelle le mot" : "Mot du défi"}
                 </p>
                 
@@ -237,9 +237,14 @@ function ChallengeContent() {
                   <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">
                     Temps
                   </p>
-                  <p className={`text-4xl font-mono font-black ${
-                    gameState === "finished" && matchResult === "win" ? "text-green-500" : ""
-                  }`}>
+                  <p 
+                    className={`text-4xl font-mono font-black ${
+                      gameState === "finished" && matchResult === "win" ? "text-green-500" : ""
+                    }`}
+                    role="timer"
+                    aria-live="polite"
+                    aria-label={`Temps écoulé: ${formatTime(gameState === "finished" && finalTime ? finalTime : elapsedTime)}`}
+                  >
                     {formatTime(gameState === "finished" && finalTime ? finalTime : elapsedTime)}
                   </p>
                 </div>
@@ -251,7 +256,14 @@ function ChallengeContent() {
                       <span>Progression</span>
                       <span>{currentIndex + 1} / {word.length}</span>
                     </div>
-                    <div className="h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden"
+                      role="progressbar"
+                      aria-valuenow={currentIndex + 1}
+                      aria-valuemin={0}
+                      aria-valuemax={word.length}
+                      aria-label={`Progression: ${currentIndex + 1} sur ${word.length} lettres`}
+                    >
                       <motion.div
                         className="h-full bg-orange-500"
                         initial={{ width: 0 }}
@@ -286,12 +298,17 @@ function ChallengeContent() {
 
             {/* Colonne centrale - Webcam */}
             <div className="lg:col-span-6 order-2">
-              <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden border-2 border-neutral-200 dark:border-neutral-800">
-                <video ref={videoRef} className="hidden" playsInline muted autoPlay />
+              <div 
+                className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-900 rounded-2xl overflow-hidden border-2 border-neutral-200 dark:border-neutral-800"
+                role="region"
+                aria-label="Zone de la webcam"
+              >
+                <video ref={videoRef} className="hidden" playsInline muted autoPlay aria-hidden="true" />
                 <canvas
                   ref={canvasRef}
                   className={`absolute inset-0 w-full h-full ${isStreaming ? "block" : "hidden"}`}
                   style={{ objectFit: "cover" }}
+                  aria-label="Flux vidéo de la webcam"
                 />
 
                 {/* État initial */}
@@ -316,10 +333,16 @@ function ChallengeContent() {
 
                 {/* Chargement */}
                 {isLoading && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6" role="status" aria-label="Chargement de l'IA">
                     <div className="w-12 h-12 border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin mb-4" />
                     <p className="font-medium mb-1">{loadingStep}</p>
-                    <div className="w-48 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                    <div 
+                      className="w-48 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden"
+                      role="progressbar"
+                      aria-valuenow={loadingProgress}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    >
                       <div 
                         className="h-full bg-orange-500 transition-all"
                         style={{ width: `${loadingProgress}%` }}
@@ -330,7 +353,7 @@ function ChallengeContent() {
 
                 {/* Erreur */}
                 {error && (
-                  <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-red-500 text-white text-sm rounded-lg">
+                  <div className="absolute bottom-4 left-4 right-4 px-4 py-2 bg-red-500 text-white text-sm rounded-lg" role="alert">
                     {error}
                   </div>
                 )}
@@ -338,8 +361,8 @@ function ChallengeContent() {
                 {/* Overlays streaming */}
                 {isStreaming && (
                   <>
-                    <div className="absolute top-4 left-4 flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                    <div className="absolute top-4 left-4 flex items-center gap-2" aria-live="polite">
+                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" aria-hidden="true" />
                       <span className="text-xs text-white font-medium bg-black/50 px-2 py-1 rounded">
                         En direct
                       </span>
@@ -365,13 +388,13 @@ function ChallengeContent() {
                     )}
 
                     {gameState === "playing" && displayedLetter && (
-                      <div className="absolute top-4 right-4">
+                      <div className="absolute top-4 right-4" aria-live="polite">
                         <div className={`px-4 py-3 rounded-xl ${
                           displayedLetter === currentLetter
                             ? "bg-green-500 text-white"
                             : "bg-black/70 text-white"
                         }`}>
-                          <span className="text-3xl font-black">{displayedLetter}</span>
+                          <span className="text-3xl font-black" aria-label={`Lettre détectée: ${displayedLetter}`}>{displayedLetter}</span>
                         </div>
                       </div>
                     )}
@@ -380,7 +403,7 @@ function ChallengeContent() {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col items-center gap-4 mt-4">
+              <div className="flex flex-col items-center gap-4 mt-4" role="group" aria-label="Actions du jeu">
                 {isStreaming && gameState === "idle" && (
                   <button
                     onClick={startGame}
@@ -488,7 +511,7 @@ function ChallengeContent() {
                     <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">
                       Comment ça marche ?
                     </p>
-                    <ol className="space-y-3 text-sm text-neutral-500">
+                    <ol className="space-y-3 text-sm text-neutral-500" aria-label="Étapes du défi">
                       <li className="flex items-start gap-3">
                         <span className="w-5 h-5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
                         <span>Signe le mot le plus vite possible</span>

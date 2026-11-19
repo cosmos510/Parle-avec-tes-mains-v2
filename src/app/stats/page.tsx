@@ -59,8 +59,8 @@ export default function StatsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin" />
+      <main className="min-h-screen bg-white dark:bg-neutral-950 flex items-center justify-center" role="main" aria-busy="true">
+        <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white rounded-full animate-spin" role="status" aria-label="Chargement" />
       </main>
     );
   }
@@ -98,13 +98,14 @@ export default function StatsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-950 pt-20 pb-12 px-4">
+    <main className="min-h-screen bg-white dark:bg-neutral-950 pt-20 pb-12 px-4" role="main" aria-labelledby="page-title">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Link 
             href="/profile" 
             className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+            aria-label="Retour au profil"
           >
             ← Profil
           </Link>
@@ -112,12 +113,12 @@ export default function StatsPage() {
 
         {/* Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-black mb-2">Statistiques</h1>
+          <h1 id="page-title" className="text-4xl font-black mb-2">Statistiques</h1>
           <p className="text-neutral-500">Analyse détaillée de ta progression</p>
         </div>
 
         {/* Overview cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8" role="region" aria-label="Résumé des statistiques">
           <div className="p-4 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 text-center">
             <p className="text-3xl font-black text-orange-500">{totalSuccesses}</p>
             <p className="text-sm text-neutral-500">Validations</p>
@@ -137,9 +138,9 @@ export default function StatsPage() {
         </div>
 
         {/* Alphabet grid with success count */}
-        <div className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 mb-8">
-          <h2 className="font-semibold mb-4">Progression par lettre</h2>
-          <div className="grid grid-cols-6 sm:grid-cols-9 gap-2">
+        <section className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 mb-8" aria-labelledby="progression-title">
+          <h2 id="progression-title" className="font-semibold mb-4">Progression par lettre</h2>
+          <div className="grid grid-cols-6 sm:grid-cols-9 gap-2" role="grid" aria-label="Grille de progression">
             {ALPHABET.map((letter) => {
               const stat = letterStats.find(s => s.letter === letter);
               const successes = stat?.successes || 0;
@@ -155,6 +156,8 @@ export default function StatsPage() {
               return (
                 <div
                   key={letter}
+                  role="gridcell"
+                  aria-label={`Lettre ${letter}, ${successes} validations${isMastered ? ', maîtrisée' : ''}`}
                   className={`aspect-square rounded-lg ${bgColor} flex flex-col items-center justify-center relative`}
                 >
                   <span className={`font-bold ${isMastered ? "text-green-600 dark:text-green-400" : ""}`}>
@@ -170,7 +173,7 @@ export default function StatsPage() {
               );
             })}
           </div>
-          <div className="flex gap-4 mt-4 text-xs text-neutral-500">
+          <div className="flex gap-4 mt-4 text-xs text-neutral-500" aria-hidden="true">
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 rounded bg-neutral-100 dark:bg-neutral-800"></span>
               Non pratiqué
@@ -184,12 +187,12 @@ export default function StatsPage() {
               Maîtrisé
             </span>
           </div>
-        </div>
+        </section>
 
         {/* Strongest letters */}
         {strongestLetters.length > 0 && (
-          <div className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 mb-8">
-            <h2 className="font-semibold mb-4">Tes lettres les plus fortes</h2>
+          <section className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 mb-8" aria-labelledby="strongest-title">
+            <h2 id="strongest-title" className="font-semibold mb-4">Tes lettres les plus fortes</h2>
             <div className="space-y-3">
               {strongestLetters.map((stat, index) => (
                 <div key={stat.letter} className="flex items-center gap-4">
@@ -200,6 +203,10 @@ export default function StatsPage() {
                     <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-orange-500 rounded-full"
+                        role="progressbar"
+                        aria-valuenow={stat.successes}
+                        aria-valuemax={strongestLetters[0]?.successes || 1}
+                        aria-label={`${stat.successes} validations`}
                         style={{ 
                           width: `${Math.min(100, (stat.successes / (strongestLetters[0]?.successes || 1)) * 100)}%` 
                         }}
@@ -210,13 +217,13 @@ export default function StatsPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* Letters to practice */}
         {unpracticedLetters.length > 0 && (
-          <div className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 mb-8">
-            <h2 className="font-semibold mb-4">Lettres à découvrir</h2>
+          <section className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 mb-8" aria-labelledby="discover-title">
+            <h2 id="discover-title" className="font-semibold mb-4">Lettres à découvrir</h2>
             <div className="flex flex-wrap gap-2">
               {unpracticedLetters.map((letter) => (
                 <span
@@ -233,13 +240,13 @@ export default function StatsPage() {
             >
               Pratiquer ces lettres →
             </Link>
-          </div>
+          </section>
         )}
 
         {/* Recent activity */}
         {letterStats.length > 0 && (
-          <div className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800">
-            <h2 className="font-semibold mb-4">Activité récente</h2>
+          <section className="p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800" aria-labelledby="activity-title">
+            <h2 id="activity-title" className="font-semibold mb-4">Activité récente</h2>
             <div className="space-y-2">
               {letterStats
                 .filter(s => s.lastPracticed)
@@ -259,12 +266,12 @@ export default function StatsPage() {
                   </div>
                 ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* Loading state */}
         {loadingStats && (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-12" role="status" aria-label="Chargement des statistiques">
             <div className="w-8 h-8 border-2 border-neutral-300 border-t-orange-500 rounded-full animate-spin" />
           </div>
         )}

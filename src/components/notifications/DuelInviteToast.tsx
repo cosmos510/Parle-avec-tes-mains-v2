@@ -35,7 +35,7 @@ export function DuelInviteToast() {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed top-4 right-4 z-50 space-y-2" role="region" aria-label="Invitations de duel" aria-live="polite">
       <AnimatePresence>
         {duelInvites.map((invite) => (
           <motion.div
@@ -44,17 +44,20 @@ export function DuelInviteToast() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 100, scale: 0.9 }}
             className="bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-800 p-4 max-w-sm"
+            role="alertdialog"
+            aria-labelledby={`invite-title-${invite.roomId}`}
+            aria-describedby={`invite-desc-${invite.roomId}`}
           >
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0" aria-hidden="true">
                 <Swords className="w-5 h-5 text-orange-500" />
               </div>
               
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">
+                <p id={`invite-title-${invite.roomId}`} className="font-medium text-sm">
                   Invitation au duel !
                 </p>
-                <p className="text-sm text-neutral-500 truncate">
+                <p id={`invite-desc-${invite.roomId}`} className="text-sm text-neutral-500 truncate">
                   <span className="font-medium text-neutral-700 dark:text-neutral-300">
                     {invite.fromName}
                   </span>{' '}
@@ -80,6 +83,7 @@ export function DuelInviteToast() {
               <button
                 onClick={() => handleDecline(invite.roomId)}
                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                aria-label="Fermer l'invitation"
               >
                 <X className="w-4 h-4" />
               </button>

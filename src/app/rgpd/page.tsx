@@ -8,24 +8,25 @@ export const metadata: Metadata = {
 
 export default function RGPDPage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-950 pt-16 pb-20">
+    <main className="min-h-screen bg-white dark:bg-neutral-950 pt-16 pb-20" role="main" aria-labelledby="page-title">
       <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <Link 
           href="/" 
           className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white mb-8"
+          aria-label="Retour à l'accueil"
         >
           ← Retour à l&apos;accueil
         </Link>
 
-        <h1 className="text-4xl sm:text-5xl font-black mb-4">Politique de confidentialité</h1>
+        <h1 id="page-title" className="text-4xl sm:text-5xl font-black mb-4">Politique de confidentialité</h1>
         <p className="text-neutral-500 mb-12">
           Comment tes données sont collectées, utilisées et protégées.
         </p>
 
         {/* En bref */}
-        <section className="mb-12 p-6 rounded-2xl bg-neutral-50 dark:bg-neutral-900">
-          <h2 className="text-xl font-bold mb-4">En bref</h2>
+        <section className="mb-12 p-6 rounded-2xl bg-neutral-50 dark:bg-neutral-900" aria-labelledby="bref-title">
+          <h2 id="bref-title" className="text-xl font-bold mb-4">En bref</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               <strong className="text-neutral-900 dark:text-white">Tes données t&apos;appartiennent.</strong>
@@ -41,8 +42,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Responsable */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Responsable du traitement</h2>
+        <section className="mb-12" aria-labelledby="responsable-title">
+          <h2 id="responsable-title" className="text-xl font-bold mb-4">Responsable du traitement</h2>
           <div className="p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <div className="grid sm:grid-cols-3 gap-4">
               <div>
@@ -71,8 +72,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Données collectées */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Données collectées</h2>
+        <section className="mb-12" aria-labelledby="donnees-title">
+          <h2 id="donnees-title" className="text-xl font-bold mb-4">Données collectées</h2>
           
           <h3 className="font-semibold text-lg mb-3 mt-6">Sans compte (visiteur)</h3>
           <div className="space-y-3 mb-6">
@@ -118,8 +119,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Finalités */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Pourquoi on collecte ces données</h2>
+        <section className="mb-12" aria-labelledby="finalites-title">
+          <h2 id="finalites-title" className="text-xl font-bold mb-4">Pourquoi on collecte ces données</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <ul className="list-disc list-inside space-y-2">
               <li><strong>Authentification :</strong> pour te permettre de te connecter</li>
@@ -135,8 +136,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Webcam */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Utilisation de la webcam</h2>
+        <section className="mb-12" aria-labelledby="webcam-title">
+          <h2 id="webcam-title" className="text-xl font-bold mb-4">Utilisation de la webcam</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               Quand tu actives ta webcam, le flux vidéo est analysé par{" "}
@@ -151,8 +152,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Conservation */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Durée de conservation</h2>
+        <section className="mb-12" aria-labelledby="conservation-title">
+          <h2 id="conservation-title" className="text-xl font-bold mb-4">Durée de conservation</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               Tes données sont conservées tant que ton compte est actif. 
@@ -165,8 +166,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Vos droits */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Tes droits RGPD</h2>
+        <section className="mb-12" aria-labelledby="droits-title">
+          <h2 id="droits-title" className="text-xl font-bold mb-4">Tes droits RGPD</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               Conformément au RGPD, tu disposes des droits suivants :
@@ -201,8 +202,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Comment exercer */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Comment exercer tes droits</h2>
+        <section className="mb-12" aria-labelledby="exercer-title">
+          <h2 id="exercer-title" className="text-xl font-bold mb-4">Comment exercer tes droits</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               La plupart des droits peuvent être exercés directement depuis{" "}
@@ -226,8 +227,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Services tiers */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Services tiers</h2>
+        <section className="mb-12" aria-labelledby="services-title">
+          <h2 id="services-title" className="text-xl font-bold mb-4">Services tiers</h2>
           <div className="space-y-4">
             <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800">
               <p className="font-semibold mb-1">Firebase (Google)</p>
@@ -251,8 +252,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Sécurité */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Sécurité</h2>
+        <section className="mb-12" aria-labelledby="securite-title">
+          <h2 id="securite-title" className="text-xl font-bold mb-4">Sécurité</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               Nous mettons en œuvre des mesures techniques pour protéger tes données :
@@ -267,8 +268,8 @@ export default function RGPDPage() {
         </section>
 
         {/* Réclamation */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold mb-4">Réclamation</h2>
+        <section className="mb-12" aria-labelledby="reclamation-title">
+          <h2 id="reclamation-title" className="text-xl font-bold mb-4">Réclamation</h2>
           <div className="text-neutral-600 dark:text-neutral-400 space-y-4">
             <p>
               Si tu estimes que tes droits ne sont pas respectés, tu peux 
