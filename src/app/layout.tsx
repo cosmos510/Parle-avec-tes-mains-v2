@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Maxime Martin" }],
   creator: "Maxime Martin",
-  metadataBase: new URL("https://parle-avec-tes-mains.fr"),
+  metadataBase: new URL("https://www.parle-avec-tes-mains.fr"),
   applicationName: "Parle avec tes mains",
   appleWebApp: {
     capable: true,
@@ -51,13 +51,16 @@ export const metadata: Metadata = {
       "Apprends l'alphabet LSF grâce à la reconnaissance en temps réel. Gratuit et 100% privé.",
     type: "website",
     locale: "fr_FR",
-    url: "https://parle-avec-tes-mains.fr",
+    url: "https://www.parle-avec-tes-mains.fr",
     siteName: "Parle avec tes mains",
   },
   twitter: {
     card: "summary_large_image",
     title: "Parle avec tes mains",
     description: "Apprends la langue des signes française avec ta webcam",
+  },
+  alternates: {
+    canonical: "https://www.parle-avec-tes-mains.fr",
   },
   robots: {
     index: true,
